@@ -78,6 +78,7 @@ public class AuthService {
                         .email(signUpRequest.getEmail())
                         .role(Role.valueOf(signUpRequest.getRole()))
                         .build();
+                userRepository.save(user);
                 var jwt = jwtService.generateToken(user);
                 var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
                 saveUserToken(user, jwt);
@@ -86,7 +87,6 @@ public class AuthService {
                 response.setToken(jwt);
                 response.setRefreshToken(refreshToken);
                 response.setMessage("User registered successfully");
-                userRepository.save(user);
             }
         return response;
     }

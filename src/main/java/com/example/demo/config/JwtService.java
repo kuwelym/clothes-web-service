@@ -1,6 +1,5 @@
 package com.example.demo.config;
 
-import com.example.demo.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -12,15 +11,19 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
     private final SecretKey key;
-    private static final long EXPIRATION_TIME = 86400000; // 1 day
+    private final long EXPIRATION_TIME;
+    private final long REFRESH_EXPIRATION_TIME;
     public JwtService(Environment environment) {
         final String SECRET_KEY = environment.getProperty("application.security.jwt.secret-key");
         assert SECRET_KEY != null;
+        EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.expiration")));
+        REFRESH_EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.refresh-token.expiration")));
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -64,7 +67,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }

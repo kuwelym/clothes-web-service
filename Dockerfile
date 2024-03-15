@@ -1,12 +1,23 @@
+# Stage 1: Build Environment
+FROM gradle:jdk17 AS builder
+
+# Copy Gradle wrapper and project files
+COPY . /app
+
+# Adjust working directory
+WORKDIR /app
+
+# Build the application using Gradle wrapper
+RUN ./gradlew clean build
+
+# Stage 2: Final Image
 FROM openjdk:17-slim
-# Update package lists (optional for some base images)
-RUN apt-get update && apt-get upgrade -y
 
-# Install OpenJDK 17
-RUN apt-get install -y openjdk-17-jdk
+# Copy the application JAR
+COPY --from=builder /app/build/libs/*.jar app.jar
 
-ENV JAVA_HOME /usr/java/openjdk-17
+# Set environment variable
+ENV JAVA_HOME /usr/lib/jvm/java-17
 
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+# Entrypoint
+ENTRYPOINT ["java", "-jar", "app.jar"]

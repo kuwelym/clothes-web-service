@@ -4,17 +4,18 @@ version: '3'
 services:
   mysqldb:
     image: mysql:8.0
+    restart: on-failure
     environment:
       - MYSQL_ROOT_PASSWORD=abcd1234
       - MYSQL_DATABASE=testDB
       - MYSQL_PASSWORD=abcd1234
     ports:
-      - 3306:3306
+      - "3306:3306"
 
   web:
     build: .
     ports:
-      - 8080:8080
+      - "8080:8080"
     restart: on-failure
     depends_on:
       - mysqldb

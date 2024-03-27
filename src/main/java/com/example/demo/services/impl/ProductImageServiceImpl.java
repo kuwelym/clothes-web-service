@@ -4,7 +4,6 @@ import com.example.demo.dto.ProductImageDTO;
 import com.example.demo.models.Product;
 import com.example.demo.models.ProductImage;
 import com.example.demo.repository.ProductImageRepository;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.services.ProductImageService;
 import com.example.demo.services.mappers.ProductImageServiceMapper;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +78,14 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     public void deleteAllProductImages() {
         productImageRepository.deleteAll();
+    }
+
+    @Override
+    public List<ProductImageDTO> findProductImagesByProductId(Long productId) {
+        List<ProductImage> productImages = productImageRepository.findByProductId(productId);
+        return productImages.stream()
+                .map(ProductImageServiceMapper::toProductImageDTO)
+                .collect(Collectors.toList());
     }
 
 }

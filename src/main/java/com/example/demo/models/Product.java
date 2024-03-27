@@ -23,7 +23,13 @@ public class Product {
     private Long id;
     private String name;
     private Double price;
-    private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    private Category category;
+
+    private String description;
+    private Integer availableQuantity;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

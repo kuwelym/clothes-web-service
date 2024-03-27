@@ -130,4 +130,20 @@ public class ColorServiceImpl implements ColorService {
         colorRepository.deleteAll();
     }
 
+    @Override
+    public ResponseEntity<?> findColorsByProductId(Long productId) {
+        // If the product does not exist, return an error
+        if (!productRepository.existsById(productId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Product not found");
+        }
+        List<Color> colors = colorRepository.findColorsByProductId(productId);
+        if (colors == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Product not found");
+        }
+        return ResponseEntity.ok(colors.stream()
+                .map(ColorServiceMapper::toColorDTO)
+                .collect(Collectors.toList()));
+    }
 }

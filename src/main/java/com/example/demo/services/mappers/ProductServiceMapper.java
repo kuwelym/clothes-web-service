@@ -3,6 +3,7 @@ package com.example.demo.services.mappers;
 import com.example.demo.dto.ColorDTO;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.dto.ProductImageDTO;
+import com.example.demo.models.Category;
 import com.example.demo.models.Product;
 
 import java.util.Collections;
@@ -27,7 +28,7 @@ public class ProductServiceMapper {
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
-                .category(product.getCategory())
+                .categoryId(product.getCategory().getId())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .colors(colorDTOs)
@@ -40,7 +41,7 @@ public class ProductServiceMapper {
                 .id(productDTO.getId())
                 .name(productDTO.getName())
                 .price(productDTO.getPrice())
-                .category(productDTO.getCategory())
+                .category(Category.builder().id(productDTO.getCategoryId()).build())
                 .createdAt(productDTO.getCreatedAt())
                 .updatedAt(productDTO.getUpdatedAt())
                 .colors(productDTO.getColors().stream().map(ColorServiceMapper::toColor).collect(Collectors.toList()))

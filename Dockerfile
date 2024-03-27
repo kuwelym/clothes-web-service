@@ -13,12 +13,12 @@ RUN gradle wrapper --gradle-version 8.5
 
 RUN chmod +x gradlew
 # Build the application using Gradle wrapper
-RUN ./gradlew build
+RUN ./gradlew clean build
 
 # Stage 2: Final Image
 FROM openjdk:17-slim
 
-# Update package lists (optional for some base images)
+# Update the package lists
 RUN apt-get update && apt-get upgrade -y
 
 # Install OpenJDK 17

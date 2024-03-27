@@ -7,9 +7,10 @@ import java.util.List;
 
 
 public interface SizeService {
-    public ResponseEntity<?> addSize(String size, Long colorId);
-    public SizeDTO getSizesById(Long id);
-    public List<SizeDTO> getAllSizes();
-    public ResponseEntity<?> deleteSize(Long id);
-    public ResponseEntity<?> updateSize(Long id, String size);
+    ResponseEntity<?> addSize(String size, Long colorId);
+    SizeDTO getSizesById(Long id);
+    List<SizeDTO> getAllSizes();
+    ResponseEntity<?> deleteSize(Long id);
+    ResponseEntity<?> updateSize(Long id, String size);
+    List<SizeDTO> getSizesByColorId(Long colorId);
 }

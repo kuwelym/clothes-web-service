@@ -35,6 +35,15 @@ public class ProductImageController {
         return ResponseEntity.ok(productImageDTO);
     }
 
+    @GetMapping("/public/products/{productId}/product-images")
+    public ResponseEntity<?> findProductImagesByProductId(@PathVariable Long productId) {
+        List<ProductImageDTO> productImageDTOs = productImageService.findProductImagesByProductId(productId);
+        if (productImageDTOs == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product images not found");
+        }
+        return ResponseEntity.ok(productImageDTOs);
+    }
+
     @PostMapping("/admin/product-images")
     public ResponseEntity<?> createProductImage(
             @RequestBody ProductImageDTO productImageDTO

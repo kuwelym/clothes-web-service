@@ -121,8 +121,24 @@ public class AuthService {
 
     public ReqRes logout(ReqRes logoutRequest) {
         ReqRes response = new ReqRes();
-        response.setStatusCode(200);
-        response.setMessage("User logged out successfully");
+        try{
+            String username = jwtService.extractUsername(logoutRequest.getToken());
+            User user = userRepository.findByUsername(username).orElseThrow();
+            if (jwtService.isTokenValid(logoutRequest.getToken(), user)) {
+                var token = tokenRepository.findByToken(logoutRequest.getToken()).orElseThrow();
+                token.setExpired(true);
+                token.setRevoked(true);
+                tokenRepository.save(token);
+                response.setStatusCode(200);
+                response.setMessage("User logged out successfully");
+            } else {
+                response.setStatusCode(400);
+                response.setMessage("Invalid token");
+            }
+        }catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage("Internal server error");
+        }
         return response;
     }
 

@@ -2,8 +2,10 @@ package com.example.demo.models;
 
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.validation.annotation.Validated;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Builder
 @Data
@@ -17,7 +19,7 @@ public class ProductImage {
     private Long id;
 
     @Column(nullable = false)
-    private String url;
+    private String imagePath;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)

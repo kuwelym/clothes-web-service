@@ -6,15 +6,29 @@ import com.example.demo.models.ProductImage;
 import com.example.demo.repository.ProductImageRepository;
 import com.example.demo.services.ProductImageService;
 import com.example.demo.services.mappers.ProductImageServiceMapper;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
+
+    private static final String IMAGE_FOLDER_PATH = "src/main/resources/static/images/product/";
 
     public ProductImageServiceImpl(ProductImageRepository productImageRepository) {
         this.productImageRepository = productImageRepository;
@@ -38,28 +52,83 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public ResponseEntity<?> createProductImage(Long productId, String url) {
-        if (productImageRepository.existsByProductIdAndUrl(productId, url)) {
-            return ResponseEntity.badRequest().body("Product id and url already exist");
+    public Resource getImageResponse(String imagePath) {
+        String filePath = IMAGE_FOLDER_PATH + imagePath;
+        Resource resource = new FileSystemResource(filePath);
+        if (resource.exists()) {
+            return resource;
+        } else {
+            return null;
         }
-        ProductImage productImage = ProductImage.builder()
-                .url(url)
-                .product(Product.builder().id(productId).build())
-                .build();
-        productImageRepository.save(productImage);
-        return ResponseEntity.ok(ProductImageServiceMapper.toProductImageDTO(productImage));
+    }
+
+
+    @Override
+    public ResponseEntity<?> createProductImage(Long productId, MultipartFile imageFile) {
+        try {
+
+            File directory = new File(IMAGE_FOLDER_PATH);
+            if (!directory.exists()) {
+                directory.mkdirs(); // create the directory and any necessary parent directories
+            }
+
+
+            // Upload the image file to Google Drive
+            byte[] imageBytes = imageFile.getBytes();
+            // Store the image in a resources folder
+
+            ByteArrayInputStream inStreambj = new ByteArrayInputStream(imageBytes);
+
+            // read image from byte array
+            BufferedImage newImage = ImageIO.read(inStreambj);
+
+            // write output image
+            ImageIO.write(newImage, "jpg", new File(getImageUrl(imageFile.getOriginalFilename())));
+
+
+            // Save product image details in the database
+            ProductImage productImage = ProductImage.builder()
+                    .imagePath(imageFile.getOriginalFilename())
+                    .product(Product.builder().id(productId).build())
+                    .build();
+            productImageRepository.save(productImage);
+
+            return ResponseEntity.ok(ProductImageServiceMapper.toProductImageDTO(productImage));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Failed to upload image: " + e.getMessage());
+        }
     }
 
     @Override
-    public ResponseEntity<?> updateProductImage(Long id, Long productId, String url) {
+    public ResponseEntity<?> updateProductImage(Long id, Long productId, MultipartFile imageFile) {
         ProductImage productImage = productImageRepository.findById(id).orElse(null);
         if (productImage == null) {
             return ResponseEntity.badRequest().body("Product image not found");
         }
-        if (productImageRepository.existsByProductIdAndUrl(productId, url)) {
+        if (productImageRepository.existsByProductIdAndImagePath(productId, imageFile.getOriginalFilename())) {
             return ResponseEntity.badRequest().body("Product id and url already exist");
         }
-        productImage.setUrl(url);
+
+        try {
+            // Upload the image file to Google Drive
+            byte[] imageBytes = imageFile.getBytes();
+            // Store the image in a resources folder
+
+            ByteArrayInputStream inStreambj = new ByteArrayInputStream(imageBytes);
+
+            // read image from byte array
+            BufferedImage newImage = ImageIO.read(inStreambj);
+
+            // write output image
+            ImageIO.write(newImage, "jpg", new File(getImageUrl(imageFile.getOriginalFilename())));
+
+            // Delete the old image file
+            File oldImageFile = new File(IMAGE_FOLDER_PATH + productImage.getImagePath());
+            oldImageFile.delete();
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Failed to upload image: " + e.getMessage());
+        }
+        productImage.setImagePath(imageFile.getOriginalFilename());
         productImage.setProduct(Product.builder().id(productId).build());
         productImageRepository.save(productImage);
         return ResponseEntity.ok(ProductImageServiceMapper.toProductImageDTO(productImage));
@@ -80,12 +149,34 @@ public class ProductImageServiceImpl implements ProductImageService {
         productImageRepository.deleteAll();
     }
 
-    @Override
-    public List<ProductImageDTO> findProductImagesByProductId(Long productId) {
+    public List<String> findProductImageUrlsByProductId(Long productId) {
+        // Retrieve the list of ProductImage entities associated with the given productId
         List<ProductImage> productImages = productImageRepository.findByProductId(productId);
+
+        // If no ProductImage entities are found, return an empty list
+        if (productImages.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Map the list of ProductImage entities to a list of image URLs
         return productImages.stream()
-                .map(ProductImageServiceMapper::toProductImageDTO)
+                .map(ProductImage::getImagePath)
                 .collect(Collectors.toList());
     }
 
+    // Method to retrieve byte array of the image
+    private byte[] getImageByteArray(ProductImage productImage) {
+        try {
+            Path imagePath = Paths.get(IMAGE_FOLDER_PATH + productImage.getImagePath());
+            return Files.readAllBytes(imagePath);
+        } catch (IOException e) {
+            // Handle exception
+            e.printStackTrace();
+            return null; // or throw exception if desired
+        }
+    }
+
+    private String getImageUrl(String imagePath) {
+        return IMAGE_FOLDER_PATH + imagePath;
+    }
 }

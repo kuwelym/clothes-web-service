@@ -8,7 +8,7 @@ public class ProductImageServiceMapper {
     public static ProductImageDTO toProductImageDTO(ProductImage productImage) {
         return ProductImageDTO.builder()
                 .id(productImage.getId())
-                .url(productImage.getUrl())
+                .imagePath(productImage.getImagePath())
                 .productId(productImage.getProduct().getId())
                 .build();
     }
@@ -16,7 +16,7 @@ public class ProductImageServiceMapper {
     public static ProductImage toProductImage(ProductImageDTO productImageDTO) {
         return ProductImage.builder()
                 .id(productImageDTO.getId())
-                .url(productImageDTO.getUrl())
+                .imagePath(productImageDTO.getImagePath())
                 .product(Product.builder().id(productImageDTO.getProductId()).build())
                 .build();
     }

@@ -36,13 +36,13 @@ public class CategoryServiceImpl implements CategoryService {
             return ResponseEntity.badRequest().body("Error: Category with name " + name + " already exists");
         }
         try {
-            categoryRepository.save(
-                    Category
-                            .builder()
-                            .name(name)
-                            .imageUrl(imageUrl)
-                            .build());
-            return ResponseEntity.ok().body("Category " + name + " has been created successfully");
+            Category category = Category
+                    .builder()
+                    .name(name)
+                    .imageUrl(imageUrl)
+                    .build();
+            categoryRepository.save(category);
+            return ResponseEntity.ok().body(category);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e);
         }

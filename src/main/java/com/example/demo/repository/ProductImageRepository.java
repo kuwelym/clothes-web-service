@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long>{
-    Boolean existsByProductIdAndUrl(Long productId, String url);
-
+    Boolean existsByProductIdAndImagePath(Long productId, String imagePath);
     List<ProductImage> findByProductId(Long productId);
+
 }

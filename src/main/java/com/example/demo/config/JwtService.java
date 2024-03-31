@@ -22,7 +22,7 @@ public class JwtService {
     public JwtService(Environment environment) {
         final String SECRET_KEY = environment.getProperty("application.security.jwt.secret-key");
         assert SECRET_KEY != null;
-        EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.expiration")));
+        EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.access-token.expiration")));
         REFRESH_EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.refresh-token.expiration")));
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         this.key = Keys.hmacShaKeyFor(keyBytes);

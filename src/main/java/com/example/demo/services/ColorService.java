@@ -13,4 +13,5 @@ public interface ColorService {
     ResponseEntity<?> deleteColor(Long id);
     Boolean IsProductIdAndHexCodeExist(Long productId, String hexCode);
     void deleteAllColors();
+    ResponseEntity<?>  findColorsByProductId(Long productId);
 }

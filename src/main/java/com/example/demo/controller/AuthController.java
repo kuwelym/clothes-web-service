@@ -32,4 +32,11 @@ public class AuthController {
         ReqRes response = authService.refreshToken(refreshTokenRequest);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody ReqRes logoutRequest) {
+        ReqRes response = authService.logout(logoutRequest);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }
+

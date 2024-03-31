@@ -8,15 +8,12 @@ import java.util.List;
 
 @Data
 @Builder
-public class ProductDTO {
+public class CategoryDTO {
     private Long id;
     private String name;
-    private Double price;
-    private Long categoryId;
-    private String description;
-    private Integer availableQuantity;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<ColorDTO> colors;
-    private List<ProductImageDTO> images;
+
+    private List<ProductDTO> products;
 }

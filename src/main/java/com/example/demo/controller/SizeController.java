@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 public class SizeController {
@@ -32,6 +34,16 @@ public class SizeController {
     @GetMapping("/public/sizes")
     public ResponseEntity<?> getAllSizes() {
         return ResponseEntity.ok(sizeService.getAllSizes());
+    }
+
+    @GetMapping("/public/sizes/color/{colorId}")
+    public ResponseEntity<?> getSizesByColorId(@PathVariable Long colorId) {
+        List<SizeDTO> sizes = sizeService.getSizesByColorId(colorId);
+        if(sizes == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Sizes not found");
+        }
+        return ResponseEntity.ok(sizes);
     }
 
 

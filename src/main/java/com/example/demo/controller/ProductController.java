@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ColorDTO;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.services.ProductService;
 import com.example.demo.util.AuthorizationUtil;
@@ -57,41 +56,13 @@ public class ProductController {
 
         ProductDTO product;
 
-        product = productService.createProduct(productDTO.getName(), productDTO.getPrice(), productDTO.getCategory());
+        product = productService.createProduct(productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription(), productDTO.getAvailableQuantity());
         if (product == null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Product already exists");
         }
         return ResponseEntity.ok(product);
     }
-
-//    @PostMapping("/admin/products")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO, @RequestHeader("Authorization") String token){
-//        ProductDTO product;
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication != null && authentication.isAuthenticated()) {
-//            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-//            if (authorities.stream().anyMatch(authority -> authority.getAuthority().equals("ADMIN"))) {
-//                // ... create product logic (user has ADMIN role)
-//                product = productService.createProduct(productDTO.getName(), productDTO.getPrice(), productDTO.getCategory());
-//                if (product == null) {
-//                    return ResponseEntity.status(HttpStatus.CONFLICT)
-//                            .body("Product already exists");
-//                }
-//            }
-//            else {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                        .body("User is not authorized to create a product");
-//
-//            }
-//        }
-//        else{
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .body("User is not authenticated");
-//        }
-//        return ResponseEntity.ok(product);
-//    }
 
     @PatchMapping("/admin/products/{id}")
     public ResponseEntity<?> updateProduct(
@@ -104,7 +75,7 @@ public class ProductController {
             return response;
         }
 
-        ProductDTO updatedProduct = productService.updateProduct(id, productDTO.getName(), productDTO.getPrice(), productDTO.getCategory());
+        ProductDTO updatedProduct = productService.updateProduct(id, productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription(), productDTO.getAvailableQuantity());
         if (updatedProduct == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Product not found");
@@ -112,15 +83,6 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
-    @GetMapping("/public/products/{productId}/colors")
-    public ResponseEntity<?> getColorsByProductId(@PathVariable Long productId) {
-        List<ColorDTO> colors = productService.findColorsByProductId(productId);
-        if (colors == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Product not found");
-        }
-        return ResponseEntity.ok(colors);
-    }
 
     @DeleteMapping("/admin/products/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestHeader("Authorization") String authorization){

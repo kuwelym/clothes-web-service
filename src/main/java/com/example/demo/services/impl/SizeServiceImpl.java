@@ -4,7 +4,6 @@ import com.example.demo.dto.SizeDTO;
 import com.example.demo.models.Color;
 import com.example.demo.models.Size;
 import com.example.demo.repository.ColorRepository;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SizeRepository;
 import com.example.demo.services.SizeService;
 import com.example.demo.services.mappers.SizeServiceMapper;
@@ -19,7 +18,7 @@ public class SizeServiceImpl implements SizeService {
     private final SizeRepository sizeRepository;
     private final ColorRepository colorRepository;
 
-    public SizeServiceImpl(SizeRepository sizeRepository, ColorRepository colorRepository, ProductRepository productRepository) {
+    public SizeServiceImpl(SizeRepository sizeRepository, ColorRepository colorRepository) {
         this.sizeRepository = sizeRepository;
         this.colorRepository = colorRepository;
     }
@@ -27,8 +26,8 @@ public class SizeServiceImpl implements SizeService {
     @Override
     public ResponseEntity<?> addSize(String sizeStr, Long colorId) {
         Color color = colorRepository.findById(colorId).orElse(null);
-        if(color != null){
-            if(IsSizeExist(sizeStr, color)){
+        if (color != null) {
+            if (IsSizeExist(sizeStr, color)) {
                 return ResponseEntity.status(409)
                         .body("Size already exists");
             }
@@ -56,8 +55,8 @@ public class SizeServiceImpl implements SizeService {
 
     private boolean IsSizeExist(String sizeStr, Color color) {
         List<Size> sizes = sizeRepository.findAll();
-        for(Size size: sizes){
-            if(size.getSize().equals(sizeStr) && size.getColor().getId().equals(color.getId())){
+        for (Size size : sizes) {
+            if (size.getSize().equals(sizeStr) && size.getColor().getId().equals(color.getId())) {
                 return true;
             }
         }
@@ -67,7 +66,7 @@ public class SizeServiceImpl implements SizeService {
     @Override
     public ResponseEntity<?> deleteSize(Long id) {
         Size size = sizeRepository.findById(id).orElse(null);
-        if(size != null){
+        if (size != null) {
             sizeRepository.delete(size);
             return ResponseEntity.ok().build();
         }
@@ -78,12 +77,21 @@ public class SizeServiceImpl implements SizeService {
     @Override
     public ResponseEntity<?> updateSize(Long id, String size) {
         Size size1 = sizeRepository.findById(id).orElse(null);
-        if(size1 != null){
+        if (size1 != null) {
             size1.setSize(size);
             sizeRepository.save(size1);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.status(404)
                 .body("Size not found");
+    }
+
+    @Override
+    public List<SizeDTO> getSizesByColorId(Long colorId) {
+        List<Size> sizes = sizeRepository.findAllByColorId(colorId);
+        return sizes
+                .stream()
+                .map(SizeServiceMapper::toSizeDTO)
+                .collect(Collectors.toList());
     }
 }

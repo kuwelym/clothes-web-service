@@ -44,6 +44,11 @@ public class ColorController {
         return colorService.findAllColors();
     }
 
+    @GetMapping("/public/products/{productId}/colors")
+    public ResponseEntity<?> getColorsByProductId(@PathVariable Long productId) {
+        return colorService.findColorsByProductId(productId);
+    }
+
     @PatchMapping("/admin/colors/{id}")
     public ResponseEntity<?> updateColor(
             @PathVariable Long id,

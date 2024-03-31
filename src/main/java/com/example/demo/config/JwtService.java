@@ -17,13 +17,13 @@ import java.util.function.Function;
 @Service
 public class JwtService {
     private final SecretKey key;
-    private final long ACCESS_TOKEN_EXPIRATION_TIME;
-    private final long REFRESH_TOKEN_EXPIRATION_TIME;
+    private final long EXPIRATION_TIME;
+    private final long REFRESH_EXPIRATION_TIME;
     public JwtService(Environment environment) {
         final String SECRET_KEY = environment.getProperty("application.security.jwt.secret-key");
         assert SECRET_KEY != null;
-        this.ACCESS_TOKEN_EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.access-token-expiration")));
-        this.REFRESH_TOKEN_EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.refresh-token.expiration")));
+        EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.access-token.expiration")));
+        REFRESH_EXPIRATION_TIME = Long.parseLong(Objects.requireNonNull(environment.getProperty("application.security.jwt.refresh-token.expiration")));
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -57,7 +57,7 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .claim("authorities", userDetails.getAuthorities())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }
@@ -67,7 +67,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }

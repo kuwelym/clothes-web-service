@@ -20,12 +20,20 @@ import java.util.List;
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
     private String password;
     private String email;
     private String phoneNumber;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_favorite_products",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> favoriteProducts;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -43,6 +51,15 @@ public class User implements UserDetails {
         });
     }
 
+    public void addFavoriteProduct(Product product) {
+        this.favoriteProducts.add(product);
+        product.getUsers().add(this);
+    }
+
+    public void removeFavoriteProduct(Product product) {
+        this.favoriteProducts.remove(product);
+        product.getUsers().remove(this);
+    }
 
     @Override
     public boolean isAccountNonExpired() {

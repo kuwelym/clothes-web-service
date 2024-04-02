@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.models.User;
+import com.example.demo.config.JwtService;
 import com.example.demo.services.AuthService;
 import com.example.demo.services.UserService;
 import com.example.demo.util.AuthorizationUtil;
@@ -17,10 +17,11 @@ public class UserController {
     private AuthorizationUtil authorizationUtil;
     @Autowired
     private UserService userService;
+    @Autowired
+    private JwtService jwtService;
 
     @PostMapping("/user/favorite-products/{productId}")
     public ResponseEntity<?> addFavoriteProduct(
-            @RequestBody User user,
             @PathVariable Long productId,
             @RequestHeader("Authorization") String authorization
     ){
@@ -28,12 +29,12 @@ public class UserController {
         if (response != null) {
             return response;
         }
-        return userService.addFavoriteProduct(user.getId() ,productId);
+        Long userId = jwtService.extractUserIdFromToken(authorization);
+        return userService.addFavoriteProduct(userId ,productId);
     }
 
     @DeleteMapping("/user/favorite-products/{productId}")
     public ResponseEntity<?> removeFavoriteProduct(
-            @RequestBody User user,
             @PathVariable Long productId,
             @RequestHeader("Authorization") String authorization
     ){
@@ -41,19 +42,20 @@ public class UserController {
         if (response != null) {
             return response;
         }
-        return userService.removeFavoriteProduct(user.getId(), productId);
+        Long userId = jwtService.extractUserIdFromToken(authorization);
+        return userService.removeFavoriteProduct(userId, productId);
     }
 
     @GetMapping("/user/favorite-products")
     public ResponseEntity<?> getFavoriteProducts(
-            @RequestBody User user,
             @RequestHeader("Authorization") String authorization
     ){
         ResponseEntity<?> response = authorizationUtil.validateAuthorizationHeader(authorization);
         if (response != null) {
             return response;
         }
-        return userService.getFavoriteProducts(user.getId());
+        Long userId = jwtService.extractUserIdFromToken(authorization);
+        return userService.getFavoriteProducts(userId);
     }
 
 }

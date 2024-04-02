@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -28,6 +29,10 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public Long extractUserIdFromToken(String token) {
+        token = token.replace("Bearer ", "");
+        return extractClaims(token, claims -> Long.parseLong(claims.get("userId").toString()));
+    }
 
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
@@ -53,9 +58,13 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+        if (!(userDetails instanceof User user)) {
+            throw new IllegalArgumentException("UserDetails must be an instance of User");
+        }
         return Jwts.builder()
                 .subject(userDetails.getUsername())
-                .claim("authorities", userDetails.getAuthorities())
+                .claim("authorities", user.getAuthorities())
+                .claim("userId", user.getId())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, Jwts.SIG.HS256)
@@ -63,6 +72,10 @@ public class JwtService {
     }
 
     public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails) {
+        if (!(userDetails instanceof User user)) {
+            throw new IllegalArgumentException("UserDetails must be an instance of User");
+        }
+        claims.put("userId", user.getId());
         return Jwts.builder()
                 .claims(claims)
                 .subject(userDetails.getUsername())

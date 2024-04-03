@@ -1,10 +1,12 @@
 package com.example.demo.config;
 
 import com.example.demo.models.User;
+import com.example.demo.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class JwtService {
     private final SecretKey key;
     private final long EXPIRATION_TIME;
     private final long REFRESH_EXPIRATION_TIME;
+    @Autowired
+    TokenRepository tokenRepository;
     public JwtService(Environment environment) {
         final String SECRET_KEY = environment.getProperty("application.security.jwt.secret-key");
         assert SECRET_KEY != null;
@@ -51,7 +55,7 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && tokenRepository.isTokenValid(token));
     }
 
     private boolean isTokenExpired(String token) {

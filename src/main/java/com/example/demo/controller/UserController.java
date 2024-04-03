@@ -58,4 +58,17 @@ public class UserController {
         return userService.getFavoriteProducts(userId);
     }
 
+    @GetMapping("/user/users")
+    public ResponseEntity<?> getUser(
+            @RequestHeader("Authorization") String authorization
+    ){
+        ResponseEntity<?> response = authorizationUtil.validateAuthorizationHeader(authorization);
+        if (response != null) {
+            return response;
+        }
+
+        Long userId = jwtService.extractUserIdFromToken(authorization);
+        return userService.getUser(userId);
+    }
+
 }

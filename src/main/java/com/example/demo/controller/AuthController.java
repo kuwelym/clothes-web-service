@@ -1,19 +1,20 @@
 package com.example.demo.controller;
 
+
 import com.example.demo.dto.ReqRes;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody ReqRes loginRequest) {
@@ -37,6 +38,13 @@ public class AuthController {
     public ResponseEntity<?> logout(@RequestBody ReqRes logoutRequest) {
         ReqRes response = authService.logout(logoutRequest);
         return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PostMapping("/validate-token")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authorization){
+        String token = authorization.replace("Bearer ", "");
+        Boolean isValid = tokenRepository.isTokenValid(token);
+        return ResponseEntity.ok().body(isValid);
     }
 }
 

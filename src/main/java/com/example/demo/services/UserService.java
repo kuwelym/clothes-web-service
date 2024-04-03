@@ -7,6 +7,7 @@ import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserProductRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.services.mappers.ProductServiceMapper;
+import com.example.demo.services.mappers.UserServiceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -65,6 +66,14 @@ public class UserService implements UserDetailsService {
             return ResponseEntity.badRequest().body("User not found");
         }
         return ResponseEntity.ok().body(user.getFavoriteProducts().stream().map(ProductServiceMapper::toProductDTO).collect(Collectors.toList()));
+    }
+
+    public ResponseEntity<?> getUser(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+        return ResponseEntity.ok().body(UserServiceMapper.toProductDTO(user));
     }
 
 }

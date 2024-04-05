@@ -67,6 +67,11 @@ public class ProductImageServiceImpl implements ProductImageService {
     public ResponseEntity<?> createProductImage(Long productId, MultipartFile imageFile) {
         try {
 
+            if(productImageRepository.existsByProductIdAndImagePath(productId, imageFile.getOriginalFilename())){
+                return ResponseEntity.badRequest().body("Product id and url already exist");
+            }
+
+
             File directory = new File(IMAGE_FOLDER_PATH);
             if (!directory.exists()) {
                 directory.mkdirs(); // create the directory and any necessary parent directories

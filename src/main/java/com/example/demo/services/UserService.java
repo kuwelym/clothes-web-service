@@ -55,6 +55,9 @@ public class UserService implements UserDetailsService {
             return ResponseEntity.badRequest().body("User not found");
         }
         Product product = productRepository.findById(productId).orElse(null);
+        if (product == null) {
+            return ResponseEntity.badRequest().body("Product not found");
+        }
         user.removeFavoriteProduct(product);
         userFavoriteProductRepository.save(user);
         return ResponseEntity.ok().body("Product removed from favorites");

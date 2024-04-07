@@ -8,6 +8,7 @@ import com.example.demo.models.enums.Role;
 import com.example.demo.models.enums.TokenType;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.util.InputValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -66,6 +67,24 @@ public class AuthService {
 
     public ReqRes signUp(ReqRes signUpRequest) {
         ReqRes response = new ReqRes();
+
+        if (!InputValidator.isValidEmail(signUpRequest.getEmail())) {
+            response.setStatusCode(400);
+            response.setMessage("Invalid email format");
+            return response;
+        }
+
+        if (!InputValidator.isValidPassword(signUpRequest.getPassword())) {
+            response.setStatusCode(400);
+            response.setMessage("Invalid password format. Password must contain at least one uppercase letter and be at least 8 characters long");
+            return response;
+        }
+
+        if (!InputValidator.isValidPhoneNumber(signUpRequest.getPhoneNum())) {
+            response.setStatusCode(400);
+            response.setMessage("Invalid phone number format");
+            return response;
+        }
 
             if (userRepository.existsByUsername(signUpRequest.getUsername())) {
                 response.setStatusCode(400);

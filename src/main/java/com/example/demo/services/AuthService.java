@@ -39,7 +39,7 @@ public class AuthService {
 
     public ReqRes login(ReqRes signInRequest) {
         ReqRes response = new ReqRes();
-        try{
+        try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             signInRequest.getUsername(),
@@ -58,7 +58,7 @@ public class AuthService {
             response.setRefreshToken(refreshToken);
             response.setExpirationTime("24h");
 
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatusCode(401);
             response.setMessage("Invalid username or password");
         }
@@ -86,33 +86,79 @@ public class AuthService {
             return response;
         }
 
-            if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-                response.setStatusCode(400);
-                response.setMessage("Username is already taken");
-            } else {
-                User user = User.builder()
-                        .username(signUpRequest.getUsername())
-                        .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                        .phoneNumber(signUpRequest.getPhoneNum())
-                        .email(signUpRequest.getEmail())
-                        .role(Role.valueOf(signUpRequest.getRole()))
-                        .build();
-                userRepository.save(user);
-                var jwt = jwtService.generateToken(user);
-                var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
-                saveUserToken(user, jwt);
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            response.setStatusCode(400);
+            response.setMessage("Username is already taken");
+            return response;
+        }
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            response.setStatusCode(400);
+            response.setMessage("Email is already taken");
+            return response;
+        }
+        if (userRepository.existsByPhoneNumber(signUpRequest.getPhoneNum())) {
+            response.setStatusCode(400);
+            response.setMessage("Phone number is already taken");
+            return response;
+        } else {
+            User user = User.builder()
+                    .username(signUpRequest.getUsername())
+                    .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                    .phoneNumber(signUpRequest.getPhoneNum())
+                    .email(signUpRequest.getEmail())
+                    .role(Role.USER)
+                    .build();
+            userRepository.save(user);
+            var jwt = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+            saveUserToken(user, jwt);
 
-                response.setStatusCode(200);
-                response.setToken(jwt);
-                response.setRefreshToken(refreshToken);
-                response.setMessage("User registered successfully");
-            }
+            response.setStatusCode(200);
+            response.setToken(jwt);
+            response.setRefreshToken(refreshToken);
+            response.setMessage("User registered successfully");
+        }
+        return response;
+    }
+
+    public ReqRes createAdmin(ReqRes signUpRequest) {
+        ReqRes response = new ReqRes();
+
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            response.setStatusCode(400);
+            response.setMessage("Username is already taken");
+        }
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            response.setStatusCode(400);
+            response.setMessage("Email is already taken");
+        }
+        if (userRepository.existsByPhoneNumber(signUpRequest.getPhoneNum())) {
+            response.setStatusCode(400);
+            response.setMessage("Phone number is already taken");
+        } else {
+            User user = User.builder()
+                    .username(signUpRequest.getUsername())
+                    .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                    .phoneNumber(signUpRequest.getPhoneNum())
+                    .email(signUpRequest.getEmail())
+                    .role(Role.ADMIN)
+                    .build();
+            userRepository.save(user);
+            var jwt = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+            saveUserToken(user, jwt);
+
+            response.setStatusCode(200);
+            response.setToken(jwt);
+            response.setRefreshToken(refreshToken);
+            response.setMessage("Admin registered successfully");
+        }
         return response;
     }
 
     public ReqRes refreshToken(ReqRes refreshTokenRequest) {
         ReqRes response = new ReqRes();
-        try{
+        try {
             String username = jwtService.extractUsername(refreshTokenRequest.getRefreshToken());
             User user = userRepository.findByUsername(username).orElseThrow();
             if (jwtService.isTokenValid(refreshTokenRequest.getRefreshToken(), user)) {
@@ -131,7 +177,7 @@ public class AuthService {
                 response.setStatusCode(400);
                 response.setMessage("Invalid refresh token");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Internal server error");
         }
@@ -140,7 +186,7 @@ public class AuthService {
 
     public ReqRes logout(ReqRes logoutRequest) {
         ReqRes response = new ReqRes();
-        try{
+        try {
             String username = jwtService.extractUsername(logoutRequest.getToken());
             User user = userRepository.findByUsername(username).orElseThrow();
             if (jwtService.isTokenValid(logoutRequest.getToken(), user)) {
@@ -154,7 +200,7 @@ public class AuthService {
                 response.setStatusCode(400);
                 response.setMessage("Invalid token");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Internal server error");
         }
@@ -163,7 +209,7 @@ public class AuthService {
 
     public ReqRes changePassword(ReqRes changePasswordRequest) {
         ReqRes response = new ReqRes();
-        try{
+        try {
             String username = jwtService.extractUsername(changePasswordRequest.getToken());
             User user = userRepository.findByUsername(username).orElseThrow();
             if (jwtService.isTokenValid(changePasswordRequest.getToken(), user)) {
@@ -175,7 +221,7 @@ public class AuthService {
                 response.setStatusCode(400);
                 response.setMessage("Invalid token");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Internal server error");
         }

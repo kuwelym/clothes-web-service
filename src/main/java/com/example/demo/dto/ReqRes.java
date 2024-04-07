@@ -1,7 +1,6 @@
 package com.example.demo.dto;
 
 import com.example.demo.models.Product;
-import com.example.demo.models.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -20,7 +19,6 @@ public class ReqRes {
     private String issuedAt;
     private String expirationTime;
     private String username;
-    private String role;
     private String email;
     private String phoneNum;
     private String password;

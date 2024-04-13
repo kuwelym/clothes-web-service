@@ -3,8 +3,6 @@ package com.example.demo.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,11 +17,4 @@ public class Color {
     @Column(nullable = false)
     private String hexCode;
     private String name;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
-    private Product product;
-
-    @OneToMany(mappedBy = "color", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Size> sizes;
 }

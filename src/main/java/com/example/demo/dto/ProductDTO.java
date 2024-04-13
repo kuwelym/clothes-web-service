@@ -14,9 +14,7 @@ public class ProductDTO {
     private Double price;
     private Long categoryId;
     private String description;
-    private Integer availableQuantity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<ColorDTO> colors;
     private List<ProductImageDTO> images;
 }

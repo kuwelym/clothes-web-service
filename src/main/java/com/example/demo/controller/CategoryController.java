@@ -19,7 +19,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @PostMapping("/admin/categories")
+    @PostMapping("/categories")
     public ResponseEntity<?> createCategory(
             @RequestBody CategoryDTO categoryDTO,
             @RequestHeader("Authorization") String authorization
@@ -31,12 +31,12 @@ public class CategoryController {
         return categoryService.createCategory(categoryDTO.getName(), categoryDTO.getImageUrl());
     }
 
-    @GetMapping("/public/categories")
+    @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
         return categoryService.findAllCategories();
     }
 
-    @DeleteMapping("/admin/categories/{id}")
+    @DeleteMapping("/categories/{id}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authorization
@@ -48,7 +48,7 @@ public class CategoryController {
         return categoryService.deleteCategory(id);
     }
 
-    @DeleteMapping("/admin/categories")
+    @DeleteMapping("/categories")
     public ResponseEntity<?> deleteAllCategories(
             @RequestHeader("Authorization") String authorization
     ){
@@ -59,7 +59,7 @@ public class CategoryController {
         return categoryService.deleteAllCategories();
     }
 
-    @PatchMapping("/admin/categories/{id}")
+    @PatchMapping("/categories/{id}")
     public ResponseEntity<?> updateCategory(
             @PathVariable Long id,
             @RequestBody CategoryDTO categoryDTO,
@@ -72,17 +72,17 @@ public class CategoryController {
         return categoryService.updateCategory(id, categoryDTO.getName(), categoryDTO.getImageUrl());
     }
 
-    @GetMapping("/public/categories/{id}")
+    @GetMapping("/categories/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         return categoryService.findCategoryById(id);
     }
 
-    @GetMapping("/public/categories/{name}")
+    @GetMapping("/categories/{name}")
     public ResponseEntity<?> getCategoryByName(@PathVariable String name) {
         return categoryService.findCategoryByName(name);
     }
 
-    @GetMapping("/public/categories/{id}/products")
+    @GetMapping("/categories/{id}/products")
     public ResponseEntity<?> getProductsByCategoryId(@PathVariable Long id) {
         return categoryService.findProductsByCategoryId(id);
     }

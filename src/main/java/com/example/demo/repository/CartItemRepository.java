@@ -1,11 +1,9 @@
 package com.example.demo.repository;
 
-import com.example.demo.models.Size;
+import com.example.demo.models.CartItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SizeRepository extends JpaRepository<Size, Long> {
-    boolean existsBySize(String size);
-
+public interface CartItemRepository extends JpaRepository<CartItem, Long>{
 }

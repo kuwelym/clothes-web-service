@@ -1,6 +1,5 @@
 package com.example.demo.services.mappers;
 
-import com.example.demo.dto.ColorDTO;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.dto.ProductImageDTO;
 import com.example.demo.models.Category;
@@ -12,17 +11,11 @@ import java.util.stream.Collectors;
 
 public class ProductServiceMapper {
     public static ProductDTO toProductDTO(Product product) {
-        List<ColorDTO> colorDTOs = Collections.emptyList();
-        if (product.getColors() != null) {
-            colorDTOs = product.getColors().stream()
-                    .map(ColorServiceMapper::toColorDTO)
-                    .collect(Collectors.toList());
-        }
         List<ProductImageDTO> productImageDTOs = Collections.emptyList();
         if (product.getProductImages() != null) {
             productImageDTOs = product.getProductImages().stream()
                     .map(ProductImageServiceMapper::toProductImageDTO)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return ProductDTO.builder()
                 .id(product.getId())
@@ -30,10 +23,8 @@ public class ProductServiceMapper {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .categoryId(product.getCategory().getId())
-                .availableQuantity(product.getAvailableQuantity())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
-                .colors(colorDTOs)
                 .images(productImageDTOs)
                 .build();
     }
@@ -45,10 +36,8 @@ public class ProductServiceMapper {
                 .description(productDTO.getDescription())
                 .price(productDTO.getPrice())
                 .category(Category.builder().id(productDTO.getCategoryId()).build())
-                .availableQuantity(productDTO.getAvailableQuantity())
                 .createdAt(productDTO.getCreatedAt())
                 .updatedAt(productDTO.getUpdatedAt())
-                .colors(productDTO.getColors().stream().map(ColorServiceMapper::toColor).collect(Collectors.toList()))
                 .productImages(productDTO.getImages().stream().map(ProductImageServiceMapper::toProductImage).collect(Collectors.toList()))
                 .build();
     }

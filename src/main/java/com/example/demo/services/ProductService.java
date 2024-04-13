@@ -8,6 +8,7 @@ import java.util.List;
 public interface ProductService {
     List<ProductDTO> findAllProducts();
     ProductDTO findProductById(Long id);
-    ProductDTO createProduct(String name, Double price, Long categoryId, String description, Integer availableQuantity);
-    ProductDTO updateProduct(Long id, String name, Double price, Long categoryId, String description, Integer availableQuantity);
-    ResponseEntity<?> deleteProduct(Long id);}
+    ProductDTO createProduct(String name, Double price, Long categoryId, String description);
+    ProductDTO updateProduct(Long id, String name, Double price, Long categoryId, String description);
+    ResponseEntity<?> deleteProduct(Long id);
+}

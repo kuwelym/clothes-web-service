@@ -29,6 +29,16 @@ public class ColorServiceImpl implements ColorService {
     }
 
     @Override
+    public ResponseEntity<?> findColorById(Long id) {
+        Color color = colorRepository.findById(id).orElse(null);
+        if (color == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Color not found");
+        }
+        return ResponseEntity.ok(ColorServiceMapper.toColorDTO(color));
+    }
+
+    @Override
     public ColorDTO createColor(String hexCode) {
         if (colorRepository.existsByHexCode(hexCode)) {
             return null;

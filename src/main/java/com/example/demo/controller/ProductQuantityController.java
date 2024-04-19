@@ -30,6 +30,15 @@ public class ProductQuantityController {
         return productQuantityService.findAllProductQuantities();
     }
 
+    @GetMapping("/product-quantities/{productId}/{colorId}/{sizeId}")
+    public ResponseEntity<?> findProductQuantity(
+            @PathVariable Long productId,
+            @PathVariable Long colorId,
+            @PathVariable Long sizeId
+    ) {
+        return productQuantityService.findProductQuantity(productId, colorId, sizeId);
+    }
+
     @PostMapping("/product-quantities")
     public ResponseEntity<?> addProductQuantity(
             @RequestBody ProductQuantityDTO productQuantity,

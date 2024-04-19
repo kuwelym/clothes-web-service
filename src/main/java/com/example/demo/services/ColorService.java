@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface ColorService {
     List<ColorDTO> findAllColors();
+    ResponseEntity<?> findColorById(Long id);
     ColorDTO createColor(String hexCode);
     ResponseEntity<?> updateColor(Long id, String hexCode);
     ResponseEntity<?> deleteColor(Long id);

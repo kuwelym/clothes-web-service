@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,15 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cart_item")
+@Table(
+        name = "cart_item",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "unique_cart_item",
+                        columnNames = {"product_id", "size_id", "color_id", "user_id"}
+                )
+        }
+)
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +25,9 @@ public class CartItem {
 
     @Column(nullable = false)
     private int quantity;
+
+    private double totalPrice;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "color_id", referencedColumnName = "id", nullable = false)
     private Color selectedColor;
@@ -24,7 +36,7 @@ public class CartItem {
     @JoinColumn(name = "size_id", referencedColumnName = "id", nullable = false)
     private Size selectedSize;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;
 

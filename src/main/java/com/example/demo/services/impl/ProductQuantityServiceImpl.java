@@ -55,6 +55,15 @@ public class ProductQuantityServiceImpl implements ProductQuantityService {
     }
 
     @Override
+    public ResponseEntity<?> findProductQuantity(Long productId, Long colorId, Long sizeId) {
+        ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(productId, colorId, sizeId);
+        if(productQuantity == null){
+            return ResponseEntity.badRequest().body("Product quantity not found");
+        }
+        return ResponseEntity.ok().body(ProductQuantityServiceMapper.toProductQuantityDetailsDTO(productQuantity));
+    }
+
+    @Override
     public ResponseEntity<?> addProductQuantity(Long productId, Long colorId, Long sizeId, int quantity) {
         if(productQuantityRepository.existsByProductIdAndColorIdAndSizeId(productId, colorId, sizeId)){
             return ResponseEntity.badRequest().body("Product quantity already exists");

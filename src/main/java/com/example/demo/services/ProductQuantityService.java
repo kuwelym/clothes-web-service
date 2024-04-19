@@ -8,6 +8,7 @@ import java.util.List;
 public interface ProductQuantityService {
     ResponseEntity<?> getProductQuantities(Long productId);
     List<ProductQuantityDetailsDTO> findAllProductQuantities();
+    ResponseEntity<?> findProductQuantity(Long productId, Long colorId, Long sizeId);
     ResponseEntity<?> addProductQuantity(Long productId, Long colorId, Long sizeId, int quantity);
     ResponseEntity<?> updateProductQuantity(Long productQuantityId, int quantity);
     ResponseEntity<?> deleteProductQuantity(Long productQuantityId);

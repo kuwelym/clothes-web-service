@@ -46,18 +46,29 @@ public class CartItemServiceImpl implements CartItemService {
         if (productQuantity == null) {
             return ResponseEntity.badRequest().body("Product not found");
         }
-        if (productQuantity.getQuantity() < quantity) {
+        if (!isEnoughProductAvailable(productQuantity, quantity)) {
             return ResponseEntity.badRequest().body("Not enough products available");
+        }
+        // if the product is already in the cart, return error message
+        CartItem existingCartItem = user.getCartItems()
+                .stream().filter(item -> item.getProduct().getId().equals(productId)
+                        && item.getSelectedColor().getId().equals(colorId)
+                        && item.getSelectedSize().getId().equals(sizeId)
+                ).findFirst().orElse(null);
+        if (existingCartItem != null) {
+            return ResponseEntity.badRequest().body("Product already in cart");
         }
 
         CartItem cartItem = new CartItem();
         cartItem.setProduct(productQuantity.getProduct());
         cartItem.setQuantity(quantity);
+        cartItem.setTotalPrice(productQuantity.getProduct().getPrice() * quantity);
         cartItem.setSelectedColor(productQuantity.getColor());
         cartItem.setSelectedSize(productQuantity.getSize());
         cartItem.setUser(user);
         user.addCartItem(cartItem);
         cartItemRepository.save(cartItem);
+
         return ResponseEntity.ok().body(CartItemServiceMapper.toCartItemDTO(cartItem));
     }
 
@@ -83,6 +94,7 @@ public class CartItemServiceImpl implements CartItemService {
             return ResponseEntity.badRequest().body("Not enough products available");
         }
         cartItem.setQuantity(quantity);
+        cartItem.setTotalPrice(productQuantity.getProduct().getPrice() * quantity);
         cartItemRepository.save(cartItem);
         return ResponseEntity.ok().body(CartItemServiceMapper.toCartItemDTO(cartItem));
     }
@@ -112,5 +124,9 @@ public class CartItemServiceImpl implements CartItemService {
         userRepository.save(user);
         cartItemRepository.deleteAll();
         return ResponseEntity.ok().body("All cart items deleted");
+    }
+
+    private boolean isEnoughProductAvailable(ProductQuantity productQuantity, int quantity) {
+        return productQuantity.getQuantity() >= quantity;
     }
 }

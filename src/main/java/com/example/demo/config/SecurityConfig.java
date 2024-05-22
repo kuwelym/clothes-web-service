@@ -45,7 +45,7 @@ public class SecurityConfig {
                                         "**/colors/**",
                                         "**/sizes/**"
                                 ).permitAll()
-                                .requestMatchers("**/favorite-products/**","**/carts/**").hasAuthority("USER")
+                                .requestMatchers("**/favorite-products/**","**/carts/**","**/orders/**").hasAuthority("USER")
                                 .requestMatchers(
                                         HttpMethod.POST,
                                         "**/products/**",
@@ -53,7 +53,8 @@ public class SecurityConfig {
                                         "**/product-images/**",
                                         "**/product-quantities/**",
                                         "**/colors/**",
-                                        "**/sizes/**"
+                                        "**/sizes/**",
+                                        "**/orders/**"
                                 ).hasAuthority("ADMIN")
                                 .requestMatchers(
                                         HttpMethod.PATCH,
@@ -71,8 +72,13 @@ public class SecurityConfig {
                                         "**/product-images/**",
                                         "**/product-quantities/**",
                                         "**/colors/**",
-                                        "**/sizes/**"
+                                        "**/sizes/**",
+                                        "**/orders/**"
                                 ).hasAuthority("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "**/orders/**"
+                                ).hasAnyAuthority("ADMIN", "USER")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

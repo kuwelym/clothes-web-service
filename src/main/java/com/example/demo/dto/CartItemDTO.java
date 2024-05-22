@@ -1,16 +1,20 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+/**
+ * DTO for {@link com.example.demo.models.CartItem}
+ */
+
+@Value
 @Builder
 public class CartItemDTO {
-    private Long id;
-    private Long productId;
-    private int quantity;
-    private double totalPrice;
-    private Long selectedColorId;
-    private Long selectedSizeId;
-    private Long userId;
+    Long id;
+    Long productId;
+    int quantity;
+    double totalPrice;
+    Long selectedColorId;
+    Long selectedSizeId;
+    Long userId;
 }

@@ -1,20 +1,24 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+/**
+ * DTO for {@link com.example.demo.models.Product}
+ */
+
+@Value
 @Builder
 public class ProductDTO {
-    private Long id;
-    private String name;
-    private Double price;
-    private Long categoryId;
-    private String description;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<ProductImageDTO> images;
+    Long id;
+    String name;
+    Double price;
+    Long categoryId;
+    String description;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
+    List<ProductImageDTO> images;
 }

@@ -3,14 +3,15 @@ package com.example.demo.dto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Value;
 
 import java.util.List;
 
+/**
+ * DTO for order request
+ */
 @Value
 @Builder
-@Data
 public class OrderRequestDTO {
     @NotEmpty(message = "Order items cannot be empty")
     List<OrderItemDTO> items;

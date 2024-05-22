@@ -1,13 +1,17 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
+
+/**
+ * DTO for {@link com.example.demo.models.User}
+ */
 
 @Builder
-@Data
+@Value
 public class UserDTO {
-    private Long id;
-    private String username;
-    private String email;
-    private String phoneNum;
+    Long id;
+    String username;
+    String email;
+    String phoneNum;
 }

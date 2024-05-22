@@ -2,12 +2,16 @@ package com.example.demo.dto;
 
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
+/**
+ * DTO for {@link com.example.demo.models.Color}
+ */
+
+@Value
 @Builder
-@Data
 public class ColorDTO {
-    private Long id;
-    private String name;
-    private String hexCode;
+    Long id;
+    String name;
+    String hexCode;
 }

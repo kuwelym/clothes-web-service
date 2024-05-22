@@ -1,15 +1,15 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.io.Serializable;
 
 /**
  * DTO for {@link com.example.demo.models.OrderItem}
  */
+@Value
 @Builder
-@Data
 public class OrderItemDTO implements Serializable {
     Long id;
     Long productId;

@@ -1,14 +1,18 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+/**
+ * DTO for {@link com.example.demo.models.ProductQuantity}
+ */
+
+@Value
 @Builder
 public class ProductQuantityDTO {
-    private Long id;
-    private Long productId;
-    private Long colorId;
-    private Long sizeId;
-    private int quantity;
+    Long id;
+    Long productId;
+    Long colorId;
+    Long sizeId;
+    int quantity;
 }

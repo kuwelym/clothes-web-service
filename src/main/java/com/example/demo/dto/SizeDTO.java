@@ -1,11 +1,15 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
+
+/**
+ * DTO for {@link com.example.demo.models.Size}
+ */
 
 @Builder
-@Data
+@Value
 public class SizeDTO {
-    private Long id;
-    private String size;
+    Long id;
+    String size;
 }

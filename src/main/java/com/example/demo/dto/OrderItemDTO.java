@@ -13,8 +13,8 @@ import java.io.Serializable;
 public class OrderItemDTO implements Serializable {
     Long id;
     Long productId;
-    Long colorId;
-    Long sizeId;
+    Long selectedColorId;
+    Long selectedSizeId;
     int quantity;
     double totalPrice;
 }

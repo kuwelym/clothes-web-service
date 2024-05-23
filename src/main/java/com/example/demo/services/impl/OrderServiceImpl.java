@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+    private static final double TAX_RATE = 0.1;
+    private static final double DELIVERY_FEE = 30000.0;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ValidationUtils ValidationUtils;
@@ -64,9 +66,12 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> createOrder(Long userId, List<OrderItemDTO> orderItemDTOS, String address, String classification, String deliveryOption) {
         return validateUserAndExecute(userId, () -> {
             for (OrderItemDTO orderItemDTO : orderItemDTOS) {
-                ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getColorId(), orderItemDTO.getSizeId());
-                if (productQuantity == null || !isEnoughProductAvailable(productQuantity, orderItemDTO.getQuantity())) {
-                    return ResponseEntity.badRequest().body("Not enough products available");
+                ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getSelectedColorId(), orderItemDTO.getSelectedSizeId());
+                if (productQuantity == null) {
+                    return ResponseEntity.badRequest().body("Product not found");
+                }
+                if (!isEnoughProductAvailable(productQuantity, orderItemDTO.getQuantity())) {
+                    return ResponseEntity.badRequest().body("Not enough product available");
                 }
             }
 
@@ -76,16 +81,25 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.PENDING);
             order.setOrderClass(EnumUtils.getEnumFromString(OrderClass.class, classification));
             order.setDeliveryOption(DeliveryOption.valueOf(deliveryOption));
-            order.setTotalPrice(orderItemDTOS.stream().mapToDouble(OrderItemDTO::getTotalPrice).sum());
+            double totalPriceWithoutFee = orderItemDTOS
+                    .stream()
+                    .mapToDouble(OrderItemDTO::getTotalPrice)
+                    .sum() * (1 + TAX_RATE);
+
+            if (totalPriceWithoutFee > 999000 || isStorePickup(order)) {
+                order.setTotalPrice(totalPriceWithoutFee);
+            } else {
+                order.setTotalPrice(totalPriceWithoutFee + DELIVERY_FEE);
+            }
 
             orderRepository.save(order);
 
             Set<OrderItem> orderItems = orderItemDTOS.stream().map(itemDTO -> {
                 Product product = productRepository.findById(itemDTO.getProductId())
                         .orElseThrow(() -> new RuntimeException("Product not found"));
-                Color color = colorRepository.findById(itemDTO.getColorId())
+                Color color = colorRepository.findById(itemDTO.getSelectedColorId())
                         .orElseThrow(() -> new RuntimeException("Color not found"));
-                Size size = sizeRepository.findById(itemDTO.getSizeId())
+                Size size = sizeRepository.findById(itemDTO.getSelectedSizeId())
                         .orElseThrow(() -> new RuntimeException("Size not found"));
 
                 OrderItem orderItem = new OrderItem();
@@ -107,6 +121,10 @@ public class OrderServiceImpl implements OrderService {
 
             return ResponseEntity.ok(OrderServiceMapper.mapToOrderDTO(order));
         });
+    }
+
+    private boolean isStorePickup(Order order) {
+        return order.getDeliveryOption() == DeliveryOption.ON_STORE_PICKUP;
     }
 
     // Admin update order status to either CONFIRMED, DELIVERED, CANCELLED, AVAILABLE_FOR_PICKUP, PICKED_UP, ON_THE_WAY
@@ -165,7 +183,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void updateProductQuantities(List<OrderItemDTO> orderItemDTOS) {
         orderItemDTOS.forEach(orderItemDTO -> {
-            ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getColorId(), orderItemDTO.getSizeId());
+            ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getSelectedColorId(), orderItemDTO.getSelectedSizeId());
             productQuantity.setQuantity(productQuantity.getQuantity() - orderItemDTO.getQuantity());
             productQuantityRepository.save(productQuantity);
         });

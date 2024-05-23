@@ -92,8 +92,6 @@ public class UserController {
         if (response != null) {
             return response;
         }
-        List<String> roles = jwtService.extractAuthorities(authorization);
-        System.out.println(roles);
         Long userId = jwtService.extractUserIdFromToken(authorization);
         return cartItemService.getCartItems(userId);
     }

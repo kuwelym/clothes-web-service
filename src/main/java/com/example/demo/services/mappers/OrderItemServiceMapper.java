@@ -9,8 +9,8 @@ public class OrderItemServiceMapper {
         return OrderItemDTO.builder()
                 .id(orderItem.getId())
                 .productId(orderItem.getProduct().getId())
-                .colorId(orderItem.getSelectedColor().getId())
-                .sizeId(orderItem.getSelectedSize().getId())
+                .selectedColorId(orderItem.getSelectedColor().getId())
+                .selectedSizeId(orderItem.getSelectedSize().getId())
                 .quantity(orderItem.getQuantity())
                 .totalPrice(orderItem.getTotalPrice())
                 .build();

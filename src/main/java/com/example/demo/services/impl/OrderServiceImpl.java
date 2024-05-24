@@ -1,9 +1,6 @@
 package com.example.demo.services.impl;
 
-import com.example.demo.dto.DeliveryDTO;
-import com.example.demo.dto.OrderDTO;
-import com.example.demo.dto.OrderItemDTO;
-import com.example.demo.dto.StorePickupDTO;
+import com.example.demo.dto.*;
 import com.example.demo.models.*;
 import com.example.demo.models.enums.DeliveryOption;
 import com.example.demo.models.enums.OrderClass;
@@ -36,8 +33,10 @@ public class OrderServiceImpl implements OrderService {
     private final SizeRepository sizeRepository;
     private final StorePickupRepository storePickupRepository;
     private final DeliveryRepository deliveryRepository;
+    private final OrderContactRepository orderContactRepository;
+    private final UserRepository userRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ValidationUtils validationUtils, ProductQuantityRepository productQuantityRepository, ProductRepository productRepository, ColorRepository colorRepository, SizeRepository sizeRepository, StorePickupRepository storePickupRepository, DeliveryRepository deliveryRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ValidationUtils validationUtils, ProductQuantityRepository productQuantityRepository, ProductRepository productRepository, ColorRepository colorRepository, SizeRepository sizeRepository, StorePickupRepository storePickupRepository, DeliveryRepository deliveryRepository, OrderContactRepository orderContactRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         ValidationUtils = validationUtils;
@@ -47,6 +46,8 @@ public class OrderServiceImpl implements OrderService {
         this.sizeRepository = sizeRepository;
         this.storePickupRepository = storePickupRepository;
         this.deliveryRepository = deliveryRepository;
+        this.orderContactRepository = orderContactRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -70,13 +71,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<?> createOrder(Long userId, Set<OrderItemDTO> orderItemDTOS, OrderClass classification, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO) {
+    public ResponseEntity<?> createOrder(Long userId, Set<OrderItemDTO> orderItemDTOS, OrderClass classification, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO, OrderContactDTO orderContactDTO) {
         return validateUserAndExecute(userId, () -> {
             if (!validateOrderItems(orderItemDTOS)) {
                 return ResponseEntity.badRequest().body("Invalid product details or insufficient stock");
             }
 
-            Order order = createOrderBase(userId, deliveryOption, deliveryDTO, storePickupDTO);
+            Order order = createOrderBase(userId, deliveryOption, deliveryDTO, storePickupDTO, orderContactDTO);
 
             double totalPriceWithoutFee = calculateTotalPrice(orderItemDTOS);
 
@@ -111,21 +112,21 @@ public class OrderServiceImpl implements OrderService {
         return true;
     }
 
-    private Order createOrderBase(Long userId, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO) {
+    private Order createOrderBase(Long userId, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO, OrderContactDTO orderContactDTO) {
         Order order = new Order();
         order.setUser((User) ValidationUtils.validateUserExistence(userId).getBody());
         order.setOrderStatus(OrderStatus.PENDING);
 
         if (deliveryOption == DeliveryOption.ON_STORE_PICKUP) {
-            configureStorePickupOrder(order, storePickupDTO);
+            configureStorePickupOrder(order, storePickupDTO, orderContactDTO, userRepository.findById(userId).get().getPhoneNumber());
         } else {
-            configureDeliveryOrder(order, deliveryDTO);
+            configureDeliveryOrder(order, deliveryDTO, orderContactDTO);
         }
 
         return order;
     }
 
-    private void configureStorePickupOrder(Order order, StorePickupDTO storePickupDTO) {
+    private void configureStorePickupOrder(Order order, StorePickupDTO storePickupDTO, OrderContactDTO orderContactDTO, String phoneNumber) {
         order.setOrderClass(OrderClass.ON_STORE);
         order.setDeliveryOption(DeliveryOption.ON_STORE_PICKUP);
         StorePickup storePickup = new StorePickup();
@@ -133,9 +134,16 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStorePickup(storePickup);
         storePickupRepository.save(storePickup);
+
+        OrderContact orderContact = new OrderContact();
+        orderContact.setFirstName(orderContactDTO.getFirstName());
+        orderContact.setLastName(orderContactDTO.getLastName());
+        orderContact.setPhone(phoneNumber);
+        order.setOrderContact(orderContact);
+        orderContactRepository.save(orderContact);
     }
 
-    private void configureDeliveryOrder(Order order, DeliveryDTO deliveryDTO) {
+    private void configureDeliveryOrder(Order order, DeliveryDTO deliveryDTO, OrderContactDTO orderContactDTO) {
         order.setOrderClass(OrderClass.ONLINE);
         order.setDeliveryOption(DeliveryOption.DELIVERY);
         Delivery delivery = new Delivery();
@@ -143,6 +151,13 @@ public class OrderServiceImpl implements OrderService {
         delivery.setDeliveryDate(LocalDate.now().plusDays(3));
         order.setDelivery(delivery);
         deliveryRepository.save(delivery);
+
+        OrderContact orderContact = new OrderContact();
+        orderContact.setFirstName(orderContactDTO.getFirstName());
+        orderContact.setLastName(orderContactDTO.getLastName());
+        orderContact.setPhone(orderContactDTO.getPhone());
+        order.setOrderContact(orderContact);
+        orderContactRepository.save(orderContact);
     }
 
     private double calculateTotalPrice(Set<OrderItemDTO> orderItemDTOS) {

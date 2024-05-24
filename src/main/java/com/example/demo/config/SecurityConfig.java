@@ -45,7 +45,7 @@ public class SecurityConfig {
                                         "**/colors/**",
                                         "**/sizes/**"
                                 ).permitAll()
-                                .requestMatchers("**/favorite-products/**","**/carts/**").hasAuthority("USER")
+                                .requestMatchers("**/favorite-products/**","**/carts/**","**/orders/**").hasAuthority("USER")
                                 .requestMatchers(
                                         HttpMethod.POST,
                                         "**/products/**",

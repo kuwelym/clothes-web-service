@@ -189,7 +189,7 @@ public class UserController {
         }
 
         Long userId = jwtService.extractUserIdFromToken(authorization);
-        return orderService.createOrder(userId, orderDTO.getOrderItems(), orderDTO.getOrderClass(), orderDTO.getDeliveryOption(), orderDTO.getDelivery(), orderDTO.getStorePickup());
+        return orderService.createOrder(userId, orderDTO.getOrderItems(), orderDTO.getOrderClass(), orderDTO.getDeliveryOption(), orderDTO.getDelivery(), orderDTO.getStorePickup(), orderDTO.getOrderContact());
     }
 
     @PatchMapping("/orders/{orderId}")

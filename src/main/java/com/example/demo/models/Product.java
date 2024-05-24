@@ -19,7 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Entity
 @Builder
-@Table(name = "products")
+@Table(name = "product")
 @JsonIgnoreProperties("category")
 public class Product {
     @Id

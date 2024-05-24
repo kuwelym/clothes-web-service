@@ -14,15 +14,15 @@ import java.util.List;
 @RestController
 public class ColorController {
     private final ColorService colorService;
-    @Autowired
-    private AuthorizationUtil authorizationUtil;
+    private final AuthorizationUtil authorizationUtil;
 
     @Autowired
-    public ColorController(ColorService colorService) {
+    public ColorController(ColorService colorService, AuthorizationUtil authorizationUtil) {
         this.colorService = colorService;
+        this.authorizationUtil = authorizationUtil;
     }
 
-    @PostMapping("/admin/colors")
+    @PostMapping("/colors")
     public ResponseEntity<?> createColor(
             @RequestBody ColorDTO colorDTO,
             @RequestHeader("Authorization") String authorization
@@ -31,7 +31,7 @@ public class ColorController {
         if (response != null) {
             return response;
         }
-        ColorDTO color = colorService.createColor(colorDTO.getProductId(), colorDTO.getName(), colorDTO.getHexCode());
+        ColorDTO color = colorService.createColor(colorDTO.getHexCode());
         if (color == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Color with the same hexCode already exists for this product");
@@ -39,17 +39,19 @@ public class ColorController {
         return ResponseEntity.ok(color);
     }
 
-    @GetMapping("/public/colors")
+    @GetMapping("/colors")
     public List<ColorDTO> getColors() {
         return colorService.findAllColors();
     }
 
-    @GetMapping("/public/products/{productId}/colors")
-    public ResponseEntity<?> getColorsByProductId(@PathVariable Long productId) {
-        return colorService.findColorsByProductId(productId);
+    @GetMapping("/colors/{id}")
+    public ResponseEntity<?> getColor(
+            @PathVariable Long id
+    ){
+        return colorService.findColorById(id);
     }
 
-    @PatchMapping("/admin/colors/{id}")
+    @PatchMapping("/colors/{id}")
     public ResponseEntity<?> updateColor(
             @PathVariable Long id,
             @RequestBody ColorDTO colorDTO,
@@ -59,10 +61,10 @@ public class ColorController {
         if (response != null) {
             return response;
         }
-        return colorService.updateColor(id, colorDTO.getProductId(), colorDTO.getName(), colorDTO.getHexCode());
+        return colorService.updateColor(id, colorDTO.getHexCode());
     }
 
-    @DeleteMapping("/admin/colors/{id}")
+    @DeleteMapping("/colors/{id}")
     public ResponseEntity<?> deleteColor(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authorization
@@ -74,7 +76,7 @@ public class ColorController {
         return colorService.deleteColor(id);
     }
 
-    @DeleteMapping("/admin/colors")
+    @DeleteMapping("/colors")
     public ResponseEntity<?> deleteAllColors(
             @RequestHeader("Authorization") String authorization
     ){

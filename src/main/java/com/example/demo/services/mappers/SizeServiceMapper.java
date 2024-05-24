@@ -1,7 +1,6 @@
 package com.example.demo.services.mappers;
 
 import com.example.demo.dto.SizeDTO;
-import com.example.demo.models.Color;
 import com.example.demo.models.Size;
 
 public class SizeServiceMapper {
@@ -9,7 +8,6 @@ public class SizeServiceMapper {
         return SizeDTO.builder()
                 .id(size.getId())
                 .size(size.getSize())
-                .colorId(size.getColor().getId())
                 .build();
     }
 
@@ -17,7 +15,6 @@ public class SizeServiceMapper {
         return Size.builder()
                 .id(sizeDTO.getId())
                 .size(sizeDTO.getSize())
-                .color(Color.builder().id(sizeDTO.getColorId()).build())
                 .build();
     }
 }

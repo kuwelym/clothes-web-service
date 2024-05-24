@@ -31,4 +31,14 @@ public class Category {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Product> products;
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" +
+                "id = " + id + ", " +
+                "name = " + name + ", " +
+                "imageUrl = " + imageUrl + ", " +
+                "createdAt = " + createdAt + ", " +
+                "updatedAt = " + updatedAt + ")";
+    }
 }

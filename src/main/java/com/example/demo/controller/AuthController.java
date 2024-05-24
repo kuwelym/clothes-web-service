@@ -28,6 +28,12 @@ public class AuthController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @PostMapping("/admin-register")
+    public ResponseEntity<?> adminSignUp(@RequestBody ReqRes signUpRequest) {
+        ReqRes response = authService.createAdmin(signUpRequest);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestBody ReqRes refreshTokenRequest) {
         ReqRes response = authService.refreshToken(refreshTokenRequest);

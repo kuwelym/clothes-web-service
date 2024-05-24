@@ -1,12 +1,16 @@
 package com.example.demo.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
+
+/**
+ * DTO for {@link com.example.demo.models.ProductImage}
+ */
 
 @Builder
-@Data
+@Value
 public class ProductImageDTO {
-    private Long id;
-    private String imagePath;
-    private Long productId;
+    Long id;
+    String imagePath;
+    Long productId;
 }

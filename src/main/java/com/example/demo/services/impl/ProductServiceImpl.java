@@ -7,6 +7,7 @@ import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.services.ProductService;
 import com.example.demo.services.mappers.ProductServiceMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+    @Autowired
     public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
@@ -35,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO createProduct(String name, Double price, Long categoryId, String description, Integer availableQuantity) {
+    public ProductDTO createProduct(String name, Double price, Long categoryId, String description) {
         Category categoryEntity = categoryRepository.findById(categoryId).orElse(null);
         if(productRepository.existsByNameAndCategoryId(name, categoryId)){
             return null;
@@ -45,14 +47,13 @@ public class ProductServiceImpl implements ProductService {
                 .price(price)
                 .category(categoryEntity)
                 .description(description)
-                .availableQuantity(availableQuantity)
                 .build();
         productRepository.save(product);
         return ProductServiceMapper.toProductDTO(product);
     }
 
     @Override
-    public ProductDTO updateProduct(Long id, String name, Double price, Long categoryId, String description, Integer availableQuantity) {
+    public ProductDTO updateProduct(Long id, String name, Double price, Long categoryId, String description) {
         Category categoryEntity = categoryRepository.findById(categoryId).orElse(null);
         Product product = productRepository.findById(id).orElse(null);
         if (product != null) {

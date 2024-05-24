@@ -4,11 +4,10 @@ package com.example.demo.services;
 import com.example.demo.models.Product;
 import com.example.demo.models.User;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserProductRepository;
+import com.example.demo.repository.UserFavoriteProductRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.services.mappers.ProductServiceMapper;
 import com.example.demo.services.mappers.UserServiceMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,12 +18,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private UserProductRepository userProductRepository;
+  
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final UserFavoriteProductRepository userFavoriteProductRepository;
+
+    public UserService(UserRepository userRepository, ProductRepository productRepository, UserFavoriteProductRepository userFavoriteProductRepository) {
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
+        this.userFavoriteProductRepository = userFavoriteProductRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -45,7 +48,7 @@ public class UserService implements UserDetailsService {
             return ResponseEntity.badRequest().body("Product already in favorites");
         }
         user.addFavoriteProduct(product);
-        userProductRepository.save(user);
+        userFavoriteProductRepository.save(user);
         return ResponseEntity.ok().body(ProductServiceMapper.toProductDTO(product));
     }
 
@@ -55,8 +58,11 @@ public class UserService implements UserDetailsService {
             return ResponseEntity.badRequest().body("User not found");
         }
         Product product = productRepository.findById(productId).orElse(null);
+        if (product == null) {
+            return ResponseEntity.badRequest().body("Product not found");
+        }
         user.removeFavoriteProduct(product);
-        userProductRepository.save(user);
+        userFavoriteProductRepository.save(user);
         return ResponseEntity.ok().body("Product removed from favorites");
     }
 

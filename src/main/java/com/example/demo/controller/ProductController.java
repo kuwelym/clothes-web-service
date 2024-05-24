@@ -9,30 +9,59 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 @RequestMapping("/api/v1")
 @RestController
 public class ProductController {
     private final ProductService productService;
-    @Autowired
-    private AuthorizationUtil authorizationUtil;
+    private final AuthorizationUtil authorizationUtil;
 
     @Autowired
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, AuthorizationUtil authorizationUtil) {
         this.productService = productService;
+        this.authorizationUtil = authorizationUtil;
     }
 
-    @GetMapping("/public/products")
-    public List<ProductDTO> getProducts() {
-        return productService.findAllProducts();
+    @GetMapping("/products")
+    public ResponseEntity<?> getProducts(@RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch) {
+        List<ProductDTO> products = productService.findAllProducts();
+        if (products.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No products found");
+        }
+
+        String eTag = calculateETagForProducts(products);
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .eTag(eTag)
+                    .body(null);
+        }
+        return ResponseEntity.ok()
+                .eTag(eTag)
+                .body(products);
     }
 
-    @GetMapping("/public/products/{id}")
-    public ProductDTO getProductById(@PathVariable Long id) {
-        Optional<ProductDTO> product = Optional.ofNullable(productService.findProductById(id));
-        return product.orElse(null);
+    @GetMapping("/products/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable Long id, @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch) {
+        ProductDTO product = productService.findProductById(id);
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Product not found");
+        }
+
+        String eTag = calculateETagForProduct(product);
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .eTag(eTag)
+                    .body(null);
+        }
+        return ResponseEntity.ok()
+                .eTag(eTag)
+                .body(product);
     }
     /**
      * Create a new product
@@ -43,7 +72,7 @@ public class ProductController {
      * @return - created product
      *
      */
-    @PostMapping("/admin/products")
+    @PostMapping("/products")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(
             @RequestBody ProductDTO productDTO,
@@ -56,7 +85,7 @@ public class ProductController {
 
         ProductDTO product;
 
-        product = productService.createProduct(productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription(), productDTO.getAvailableQuantity());
+        product = productService.createProduct(productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription());
         if (product == null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Product already exists");
@@ -64,7 +93,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @PatchMapping("/admin/products/{id}")
+    @PatchMapping("/products/{id}")
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
             @RequestBody ProductDTO productDTO,
@@ -75,7 +104,7 @@ public class ProductController {
             return response;
         }
 
-        ProductDTO updatedProduct = productService.updateProduct(id, productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription(), productDTO.getAvailableQuantity());
+        ProductDTO updatedProduct = productService.updateProduct(id, productDTO.getName(), productDTO.getPrice(), productDTO.getCategoryId(), productDTO.getDescription());
         if (updatedProduct == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Product not found");
@@ -84,12 +113,39 @@ public class ProductController {
     }
 
 
-    @DeleteMapping("/admin/products/{id}")
+    @DeleteMapping("/products/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestHeader("Authorization") String authorization){
         ResponseEntity<?> response = authorizationUtil.validateAuthorizationHeader(authorization);
         if (response != null) {
             return response;
         }
         return productService.deleteProduct(id);
+    }
+
+    private String calculateETagForProducts(List<ProductDTO> products) {
+        StringBuilder content = new StringBuilder();
+        for (ProductDTO product : products) {
+            content.append(product.toString());
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(content.toString().getBytes());
+            return "\"" + Base64.getEncoder().encodeToString(hash) + "\"";
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String calculateETagForProduct(ProductDTO product) {
+        String content = product.toString(); // Generate a string representation of the product
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(content.getBytes());
+            return "\"" + Base64.getEncoder().encodeToString(hash) + "\"";
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

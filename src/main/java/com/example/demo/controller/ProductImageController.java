@@ -23,12 +23,12 @@ public class ProductImageController {
         this.productImageService = productImageService;
     }
 
-    @GetMapping("/public/product-images")
+    @GetMapping("/product-images")
     public List<ProductImageDTO> findAllProductImages() {
         return productImageService.findAllProductImages();
     }
 
-    @GetMapping("/public/product-images/by-id/{id}")
+    @GetMapping("/product-images/by-id/{id}")
     public ResponseEntity<?> findProductImageById(@PathVariable Long id) {
         if (productImageService.findProductImageById(id) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product image not found");
@@ -38,7 +38,7 @@ public class ProductImageController {
                 .body(productImageService.getImageResponse(productImageService.findProductImageById(id).getImagePath()));
     }
 
-    @GetMapping("/public/product-images/{filename:.+}")
+    @GetMapping("/product-images/{filename:.+}")
     public ResponseEntity<?> findProductImageByFilename(@PathVariable String filename) {
         if(productImageService.getImageResponse(filename) == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image not found");
@@ -47,7 +47,7 @@ public class ProductImageController {
     }
 
 
-    @GetMapping("/public/products/{productId}/product-images")
+    @GetMapping("/products/{productId}/product-images")
     public ResponseEntity<?> findProductImagesByProductId(@PathVariable Long productId) {
         List<String> productImageFilename = productImageService.findProductImageUrlsByProductId(productId);
 
@@ -58,7 +58,7 @@ public class ProductImageController {
         return ResponseEntity.ok().body(productImageFilename);
     }
 
-    @PostMapping(path = "/admin/product-images", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/product-images", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> createProductImage(
             @ModelAttribute ProductImageDTO productImageDTO,
             @RequestBody MultipartFile imageFile,
@@ -71,8 +71,8 @@ public class ProductImageController {
 
         return productImageService.createProductImage(productImageDTO.getProductId(), imageFile);
     }
-
-    @PatchMapping(path = "/admin/product-images/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  
+    @PatchMapping(path = "/product-images/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> updateProductImage(
             @PathVariable Long id,
             @ModelAttribute ProductImageDTO productImageDTO,
@@ -87,7 +87,7 @@ public class ProductImageController {
         return productImageService.updateProductImage(id, productImageDTO.getProductId(), imageFile);
     }
 
-    @DeleteMapping("/admin/product-images/{id}")
+    @DeleteMapping("/product-images/{id}")
     public ResponseEntity<?> deleteProductImage(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authorization
@@ -100,7 +100,7 @@ public class ProductImageController {
         return productImageService.deleteProductImage(id);
     }
 
-    @GetMapping("/admin/product-images")
+    @DeleteMapping("/product-images")
     public ResponseEntity<?> deleteAllProductImages(@RequestHeader("Authorization") String authorization) {
         ResponseEntity<?> response = authorizationUtil.validateAuthorizationHeader(authorization);
         if (response != null) {

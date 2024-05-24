@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,12 +34,57 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request.requestMatchers(
-                        "**/auth/**","**/public/**")
-                        .permitAll()
-                        .requestMatchers("**/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("**/user/**").hasAuthority("USER")
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers("**/auth/**").permitAll()
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "**/products/**",
+                                        "**/categories/**",
+                                        "**/product-images/**",
+                                        "**/product-quantities/**",
+                                        "**/colors/**",
+                                        "**/sizes/**"
+                                ).permitAll()
+                                .requestMatchers("**/favorite-products/**","**/carts/**").hasAuthority("USER")
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "**/products/**",
+                                        "**/categories/**",
+                                        "**/product-images/**",
+                                        "**/product-quantities/**",
+                                        "**/colors/**",
+                                        "**/sizes/**",
+                                        "**/orders/**"
+                                ).hasAuthority("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "**/products/**",
+                                        "**/categories/**",
+                                        "**/product-images/**",
+                                        "**/product-quantities/**",
+                                        "**/colors/**",
+                                        "**/sizes/**"
+                                ).hasAuthority("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "**/products/**",
+                                        "**/categories/**",
+                                        "**/product-images/**",
+                                        "**/product-quantities/**",
+                                        "**/colors/**",
+                                        "**/sizes/**",
+                                        "**/orders/**"
+                                ).hasAuthority("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "**/orders/**"
+                                ).hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "**/orders/**"
+                                ).hasAnyAuthority("ADMIN", "USER")
+                                .anyRequest().authenticated()
+                )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(

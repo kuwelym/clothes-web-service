@@ -21,8 +21,4 @@ public class Size {
 
     @Column(nullable = false)
     private String size;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "color_id", referencedColumnName = "id", nullable = false)
-    private Color color;
 }

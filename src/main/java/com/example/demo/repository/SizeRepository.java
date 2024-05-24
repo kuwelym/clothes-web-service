@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface SizeRepository extends JpaRepository<Size, Long> {
-    List<Size> findAllByColorId(Long colorId);
+    boolean existsBySize(String size);
+
 }

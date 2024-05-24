@@ -12,10 +12,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
+
+import java.util.*;
+
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -37,6 +38,14 @@ public class JwtService {
         token = token.replace("Bearer ", "");
 
         return extractClaims(token, claims -> Long.parseLong(claims.get("userId").toString()));
+    }
+
+    public List<String> extractAuthorities(String token) {
+        token = token.replace("Bearer ", "");
+        Claims claims = extractClaims(token, Function.identity());
+        List<Map<String, String>> authorities = (List<Map<String, String>>) claims.get("authorities");
+        List<String> roles = authorities.stream().map(auth -> auth.get("authority")).collect(Collectors.toList());
+        return roles;
     }
 
     public String extractUsername(String token) {

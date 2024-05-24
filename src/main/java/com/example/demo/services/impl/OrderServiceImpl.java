@@ -1,7 +1,9 @@
 package com.example.demo.services.impl;
 
+import com.example.demo.dto.DeliveryDTO;
 import com.example.demo.dto.OrderDTO;
 import com.example.demo.dto.OrderItemDTO;
+import com.example.demo.dto.StorePickupDTO;
 import com.example.demo.models.*;
 import com.example.demo.models.enums.DeliveryOption;
 import com.example.demo.models.enums.OrderClass;
@@ -14,6 +16,7 @@ import com.example.demo.util.ValidationUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -31,8 +34,10 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final ColorRepository colorRepository;
     private final SizeRepository sizeRepository;
+    private final StorePickupRepository storePickupRepository;
+    private final DeliveryRepository deliveryRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ValidationUtils validationUtils, ProductQuantityRepository productQuantityRepository, ProductRepository productRepository, ColorRepository colorRepository, SizeRepository sizeRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ValidationUtils validationUtils, ProductQuantityRepository productQuantityRepository, ProductRepository productRepository, ColorRepository colorRepository, SizeRepository sizeRepository, StorePickupRepository storePickupRepository, DeliveryRepository deliveryRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         ValidationUtils = validationUtils;
@@ -40,6 +45,8 @@ public class OrderServiceImpl implements OrderService {
         this.productRepository = productRepository;
         this.colorRepository = colorRepository;
         this.sizeRepository = sizeRepository;
+        this.storePickupRepository = storePickupRepository;
+        this.deliveryRepository = deliveryRepository;
     }
 
     @Override
@@ -63,30 +70,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<?> createOrder(Long userId, List<OrderItemDTO> orderItemDTOS, String address, String classification, String deliveryOption) {
+    public ResponseEntity<?> createOrder(Long userId, Set<OrderItemDTO> orderItemDTOS, OrderClass classification, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO) {
         return validateUserAndExecute(userId, () -> {
-            for (OrderItemDTO orderItemDTO : orderItemDTOS) {
-                ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getSelectedColorId(), orderItemDTO.getSelectedSizeId());
-                if (productQuantity == null) {
-                    return ResponseEntity.badRequest().body("Product not found");
-                }
-                if (!isEnoughProductAvailable(productQuantity, orderItemDTO.getQuantity())) {
-                    return ResponseEntity.badRequest().body("Not enough product available");
-                }
+            if (!validateOrderItems(orderItemDTOS)) {
+                return ResponseEntity.badRequest().body("Invalid product details or insufficient stock");
             }
 
-            Order order = new Order();
-            order.setUser((User) ValidationUtils.validateUserExistence(userId).getBody());
-            order.setAddress(address);
-            order.setOrderStatus(OrderStatus.PENDING);
-            order.setOrderClass(EnumUtils.getEnumFromString(OrderClass.class, classification));
-            order.setDeliveryOption(DeliveryOption.valueOf(deliveryOption));
-            double totalPriceWithoutFee = orderItemDTOS
-                    .stream()
-                    .mapToDouble(OrderItemDTO::getTotalPrice)
-                    .sum() * (1 + TAX_RATE);
+            Order order = createOrderBase(userId, deliveryOption, deliveryDTO, storePickupDTO);
 
-            if (totalPriceWithoutFee > 999000 || isStorePickup(order)) {
+            double totalPriceWithoutFee = calculateTotalPrice(orderItemDTOS);
+
+            if (isExemptFromDeliveryFee(totalPriceWithoutFee, order)) {
                 order.setTotalPrice(totalPriceWithoutFee);
             } else {
                 order.setTotalPrice(totalPriceWithoutFee + DELIVERY_FEE);
@@ -94,24 +88,7 @@ public class OrderServiceImpl implements OrderService {
 
             orderRepository.save(order);
 
-            Set<OrderItem> orderItems = orderItemDTOS.stream().map(itemDTO -> {
-                Product product = productRepository.findById(itemDTO.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-                Color color = colorRepository.findById(itemDTO.getSelectedColorId())
-                        .orElseThrow(() -> new RuntimeException("Color not found"));
-                Size size = sizeRepository.findById(itemDTO.getSelectedSizeId())
-                        .orElseThrow(() -> new RuntimeException("Size not found"));
-
-                OrderItem orderItem = new OrderItem();
-                orderItem.setProduct(product);
-                orderItem.setSelectedColor(color);
-                orderItem.setSelectedSize(size);
-                orderItem.setQuantity(itemDTO.getQuantity());
-                orderItem.setTotalPrice(itemDTO.getTotalPrice());
-                orderItem.setOrder(order);
-
-                return orderItem;
-            }).collect(Collectors.toSet());
+            Set<OrderItem> orderItems = createOrderItems(order, orderItemDTOS);
 
             orderItemRepository.saveAll(orderItems);
             order.setOrderItems(orderItems);
@@ -123,6 +100,82 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
+    private boolean validateOrderItems(Set<OrderItemDTO> orderItemDTOS) {
+        for (OrderItemDTO orderItemDTO : orderItemDTOS) {
+            ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(
+                    orderItemDTO.getProductId(), orderItemDTO.getSelectedColorId(), orderItemDTO.getSelectedSizeId());
+            if (productQuantity == null || !isEnoughProductAvailable(productQuantity, orderItemDTO.getQuantity())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Order createOrderBase(Long userId, DeliveryOption deliveryOption, DeliveryDTO deliveryDTO, StorePickupDTO storePickupDTO) {
+        Order order = new Order();
+        order.setUser((User) ValidationUtils.validateUserExistence(userId).getBody());
+        order.setOrderStatus(OrderStatus.PENDING);
+
+        if (deliveryOption == DeliveryOption.ON_STORE_PICKUP) {
+            configureStorePickupOrder(order, storePickupDTO);
+        } else {
+            configureDeliveryOrder(order, deliveryDTO);
+        }
+
+        return order;
+    }
+
+    private void configureStorePickupOrder(Order order, StorePickupDTO storePickupDTO) {
+        order.setOrderClass(OrderClass.ON_STORE);
+        order.setDeliveryOption(DeliveryOption.ON_STORE_PICKUP);
+        StorePickup storePickup = new StorePickup();
+        storePickup.setStore(storePickupDTO.getStore());
+
+        order.setStorePickup(storePickup);
+        storePickupRepository.save(storePickup);
+    }
+
+    private void configureDeliveryOrder(Order order, DeliveryDTO deliveryDTO) {
+        order.setOrderClass(OrderClass.ONLINE);
+        order.setDeliveryOption(DeliveryOption.DELIVERY);
+        Delivery delivery = new Delivery();
+        delivery.setAddress(deliveryDTO.getAddress());
+        delivery.setDeliveryDate(LocalDate.now().plusDays(3));
+        order.setDelivery(delivery);
+        deliveryRepository.save(delivery);
+    }
+
+    private double calculateTotalPrice(Set<OrderItemDTO> orderItemDTOS) {
+        return orderItemDTOS.stream()
+                .mapToDouble(OrderItemDTO::getTotalPrice)
+                .sum() * (1 + TAX_RATE);
+    }
+
+    private boolean isExemptFromDeliveryFee(double totalPriceWithoutFee, Order order) {
+        return totalPriceWithoutFee > 999000 || isStorePickup(order);
+    }
+
+    private Set<OrderItem> createOrderItems(Order order, Set<OrderItemDTO> orderItemDTOS) {
+        return orderItemDTOS.stream().map(itemDTO -> {
+            Product product = productRepository.findById(itemDTO.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            Color color = colorRepository.findById(itemDTO.getSelectedColorId())
+                    .orElseThrow(() -> new RuntimeException("Color not found"));
+            Size size = sizeRepository.findById(itemDTO.getSelectedSizeId())
+                    .orElseThrow(() -> new RuntimeException("Size not found"));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(product);
+            orderItem.setSelectedColor(color);
+            orderItem.setSelectedSize(size);
+            orderItem.setQuantity(itemDTO.getQuantity());
+            orderItem.setTotalPrice(itemDTO.getTotalPrice());
+            orderItem.setOrder(order);
+
+            return orderItem;
+        }).collect(Collectors.toSet());
+    }
+
     private boolean isStorePickup(Order order) {
         return order.getDeliveryOption() == DeliveryOption.ON_STORE_PICKUP;
     }
@@ -130,7 +183,7 @@ public class OrderServiceImpl implements OrderService {
     // Admin update order status to either CONFIRMED, DELIVERED, CANCELLED, AVAILABLE_FOR_PICKUP, PICKED_UP, ON_THE_WAY
     // User update order status to CANCELLED, CONFIRMED, DELIVERED, PICKED_UP
     @Override
-    public ResponseEntity<?> updateOrder(Long userId, Long orderId, String orderStatus,Boolean isAdmin) {
+    public ResponseEntity<?> updateOrder(Long userId, Long orderId, String orderStatus, LocalDate deliveryDate, Boolean isAdmin) {
         return validateUserAndExecute(userId, () -> {
             Order order = orderRepository.findById(orderId).orElse(null);
             if (order == null) {
@@ -149,6 +202,22 @@ public class OrderServiceImpl implements OrderService {
                 }
                 restoreProductQuantities(order);
             }
+
+            if(isAdmin){
+                if(order.getDeliveryOption() == DeliveryOption.DELIVERY && deliveryDate != null) {
+                    order.getDelivery().setDeliveryDate(deliveryDate);
+                }
+                if(orderStatusEnum == OrderStatus.DELIVERED){
+                    order.getDelivery().setDeliveryDate(LocalDate.now());
+                }
+                if(orderStatusEnum == OrderStatus.AVAILABLE_FOR_PICKUP){
+                    order.setOrderStatus(OrderStatus.AVAILABLE_FOR_PICKUP);
+                }
+                if(order.getDeliveryOption() == DeliveryOption.ON_STORE_PICKUP && orderStatusEnum == OrderStatus.PICKED_UP){
+                    order.getStorePickup().setPickupDate(LocalDate.now());
+                }
+            }
+
 
             order.setOrderStatus(orderStatusEnum);
             orderRepository.save(order);
@@ -181,7 +250,7 @@ public class OrderServiceImpl implements OrderService {
         return productQuantity.getQuantity() >= quantity;
     }
 
-    private void updateProductQuantities(List<OrderItemDTO> orderItemDTOS) {
+    private void updateProductQuantities(Set<OrderItemDTO> orderItemDTOS) {
         orderItemDTOS.forEach(orderItemDTO -> {
             ProductQuantity productQuantity = productQuantityRepository.findByProductIdAndColorIdAndSizeId(orderItemDTO.getProductId(), orderItemDTO.getSelectedColorId(), orderItemDTO.getSelectedSizeId());
             productQuantity.setQuantity(productQuantity.getQuantity() - orderItemDTO.getQuantity());

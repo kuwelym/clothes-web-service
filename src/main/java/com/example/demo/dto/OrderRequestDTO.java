@@ -15,10 +15,10 @@ import java.util.List;
 public class OrderRequestDTO {
     @NotEmpty(message = "Order items cannot be empty")
     List<OrderItemDTO> items;
-    @NotNull(message = "Address cannot be null")
     String address;
     @NotNull(message = "Classification cannot be null")
     String classification;
     @NotNull(message = "Delivery option cannot be null")
     String deliveryOption;
+    String pickupPlace;
 }

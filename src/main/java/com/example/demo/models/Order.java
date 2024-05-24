@@ -37,11 +37,16 @@ public class Order {
     @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus;
 
+    // Whether the order is placed online or on store
     @Enumerated(EnumType.STRING)
     @Column(name = "order_class", nullable = false)
     private OrderClass orderClass;
 
-    private String address;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private StorePickup storePickup;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Delivery delivery;
 
     @Enumerated(EnumType.STRING)
     @Column(name ="delivery_option", nullable = false)
@@ -61,7 +66,6 @@ public class Order {
                 "orderDate = " + orderDate + ", " +
                 "orderStatus = " + orderStatus + ", " +
                 "orderClass = " + orderClass + ", " +
-                "address = " + address + ", " +
                 "deliveryOption = " + deliveryOption + ", " +
                 "totalPrice = " + totalPrice + ")";
     }

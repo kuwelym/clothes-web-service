@@ -45,7 +45,7 @@ public class SecurityConfig {
                                         "**/colors/**",
                                         "**/sizes/**"
                                 ).permitAll()
-                                .requestMatchers("**/favorite-products/**","**/carts/**","**/orders/**").hasAuthority("USER")
+                                .requestMatchers("**/favorite-products/**","**/carts/**").hasAuthority("USER")
                                 .requestMatchers(
                                         HttpMethod.POST,
                                         "**/products/**",
@@ -77,6 +77,10 @@ public class SecurityConfig {
                                 ).hasAuthority("ADMIN")
                                 .requestMatchers(
                                         HttpMethod.PATCH,
+                                        "**/orders/**"
+                                ).hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(
+                                        HttpMethod.GET,
                                         "**/orders/**"
                                 ).hasAnyAuthority("ADMIN", "USER")
                                 .anyRequest().authenticated()

@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.config.JwtService;
 import com.example.demo.dto.CartItemDTO;
 import com.example.demo.dto.OrderDTO;
-import com.example.demo.dto.OrderRequestDTO;
 import com.example.demo.services.CartItemService;
 import com.example.demo.services.OrderService;
 import com.example.demo.services.UserService;
@@ -181,7 +180,7 @@ public class UserController {
 
     @PostMapping("/orders")
     public ResponseEntity<?> createOrder(
-            @Valid @RequestBody OrderRequestDTO orderRequestDTO,
+            @Valid @RequestBody OrderDTO orderDTO,
             @RequestHeader("Authorization") String authorization
     ){
         ResponseEntity<?> response = authorizationUtil.validateAuthorizationHeader(authorization);
@@ -190,7 +189,7 @@ public class UserController {
         }
 
         Long userId = jwtService.extractUserIdFromToken(authorization);
-        return orderService.createOrder(userId, orderRequestDTO.getItems(), orderRequestDTO.getAddress(), orderRequestDTO.getClassification(), orderRequestDTO.getDeliveryOption());
+        return orderService.createOrder(userId, orderDTO.getOrderItems(), orderDTO.getOrderClass(), orderDTO.getDeliveryOption(), orderDTO.getDelivery(), orderDTO.getStorePickup());
     }
 
     @PatchMapping("/orders/{orderId}")
@@ -206,7 +205,8 @@ public class UserController {
 
         Long userId = jwtService.extractUserIdFromToken(authorization);
         List<String> roles = jwtService.extractAuthorities(authorization);
-        return orderService.updateOrder(userId, orderId, String.valueOf(orderDTO.getOrderStatus()), roles.contains("ADMIN"));
+
+        return orderService.updateOrder(userId, orderId, String.valueOf(orderDTO.getOrderStatus()), orderDTO.getDelivery().getDeliveryDate(), roles.contains("ADMIN"));
     }
 
     @DeleteMapping("/orders/{orderId}")

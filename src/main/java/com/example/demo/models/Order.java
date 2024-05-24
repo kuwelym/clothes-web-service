@@ -48,6 +48,10 @@ public class Order {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Delivery delivery;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_contact_id", referencedColumnName = "id")
+    private OrderContact orderContact;
+
     @Enumerated(EnumType.STRING)
     @Column(name ="delivery_option", nullable = false)
     private DeliveryOption deliveryOption;

@@ -16,6 +16,7 @@ public class OrderServiceMapper {
                 .storePickup(order.getStorePickup() != null ? StorePickupServiceMapper.toStorePickupDTO(order.getStorePickup()) : null)
                 .delivery(order.getDelivery() != null ? DeliveryServiceMapper.toDeliveryDTO(order.getDelivery()) : null)
                 .deliveryOption(order.getDeliveryOption())
+                .orderContact(order.getOrderContact() != null ? OrderContactServiceMapper.toOrderContactDTO(order.getOrderContact()) : null)
                 .totalPrice(order.getTotalPrice())
                 .build();
     }

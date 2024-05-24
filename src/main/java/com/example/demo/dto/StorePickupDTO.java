@@ -2,7 +2,7 @@ package com.example.demo.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 /**
  * DTO for {@link com.example.demo.models.StorePickup}
  */
-@Data
+@Value
 @Builder
 public class StorePickupDTO implements Serializable {
     Long id;

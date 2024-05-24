@@ -24,5 +24,7 @@ public class OrderDTO implements Serializable {
     StorePickupDTO storePickup;
     DeliveryDTO delivery;
     DeliveryOption deliveryOption;
+    OrderContactDTO orderContact;
     double totalPrice;
+
 }

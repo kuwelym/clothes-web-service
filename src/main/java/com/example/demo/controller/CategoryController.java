@@ -90,8 +90,11 @@ public class CategoryController {
 
 
     @GetMapping("/categories/{id}/products")
-    public ResponseEntity<?> getProductsByCategoryId(@PathVariable Long id) {
-        return categoryService.findProductsByCategoryId(id);
+    public ResponseEntity<?> getProductsByCategoryId(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @PathVariable Long id) {
+        return categoryService.findProductsByCategoryId(id, page*size, size);
     }
 
 }

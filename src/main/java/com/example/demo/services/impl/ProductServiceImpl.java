@@ -75,4 +75,14 @@ public class ProductServiceImpl implements ProductService {
         return ResponseEntity.status(404).body("Product not found");
     }
 
+    @Override
+    public List<ProductDTO> findProductsPaginated(int offset, int size) {
+        return productRepository.findAll()
+                .stream()
+                .skip(offset)
+                .limit(size)
+                .map(ProductServiceMapper::toProductDTO)
+                .collect(Collectors.toList());
+    }
+
 }

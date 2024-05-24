@@ -11,4 +11,5 @@ public interface ProductService {
     ProductDTO createProduct(String name, Double price, Long categoryId, String description);
     ProductDTO updateProduct(Long id, String name, Double price, Long categoryId, String description);
     ResponseEntity<?> deleteProduct(Long id);
+    List<ProductDTO> findProductsPaginated(int offset, int size);
 }

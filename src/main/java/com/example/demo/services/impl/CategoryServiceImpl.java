@@ -104,10 +104,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ResponseEntity<?> findProductsByCategoryId(Long id) {
+    public ResponseEntity<?> findProductsByCategoryId(Long id, int offset, int size) {
         try {
-            Category category = categoryRepository.findCategoryById(id);
-            return ResponseEntity.ok().body(category.getProducts().stream().map(ProductServiceMapper::toProductDTO).collect(Collectors.toList()));
+            return ResponseEntity.ok().body(
+                    categoryRepository.findCategoryById(id)
+                            .getProducts()
+                            .stream()
+                            .skip(offset)
+                            .limit(size)
+                            .map(ProductServiceMapper::toProductDTO)
+                            .collect(Collectors.toList())
+            );
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e);
         }

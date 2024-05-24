@@ -27,8 +27,15 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<?> getProducts(@RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch) {
-        List<ProductDTO> products = productService.findAllProducts();
+    public ResponseEntity<?> getProducts(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch) {
+        // Calculate the offset based on the page and size
+        int offset = page * size;
+
+        // Fetch products based on pagination parameters
+        List<ProductDTO> products = productService.findProductsPaginated(offset, size);
         if (products.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("No products found");

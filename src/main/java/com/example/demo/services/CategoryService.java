@@ -11,5 +11,5 @@ public interface CategoryService {
     ResponseEntity<?> findAllCategories();
     ResponseEntity<?> findCategoryById(Long id);
     ResponseEntity<?> findCategoryByName(String name);
-    ResponseEntity<?> findProductsByCategoryId(Long id);
+    ResponseEntity<?> findProductsByCategoryId(Long id, int offset, int size);
 }

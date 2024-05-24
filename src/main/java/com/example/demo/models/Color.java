@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Builder
-@Table(name = "colors",uniqueConstraints = {@UniqueConstraint(columnNames = {"hexCode", "product_id"})})
+@Table(name = "color",uniqueConstraints = {@UniqueConstraint(columnNames = {"hexCode", "product_id"})})
 public class Color {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

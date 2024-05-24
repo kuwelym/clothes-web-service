@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import lombok.Builder;
 import lombok.Value;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,4 +21,5 @@ public class CategoryDTO {
     LocalDateTime updatedAt;
 
     List<ProductDTO> products;
+
 }

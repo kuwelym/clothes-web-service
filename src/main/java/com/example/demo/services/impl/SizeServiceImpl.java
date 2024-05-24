@@ -64,5 +64,4 @@ public class SizeServiceImpl implements SizeService {
         return ResponseEntity.status(404)
                 .body("Size not found");
     }
-
 }

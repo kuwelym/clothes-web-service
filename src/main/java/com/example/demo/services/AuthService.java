@@ -186,7 +186,9 @@ public class AuthService {
 
     public ReqRes logout(ReqRes logoutRequest) {
         ReqRes response = new ReqRes();
+
         try {
+
             String username = jwtService.extractUsername(logoutRequest.getToken());
             User user = userRepository.findByUsername(username).orElseThrow();
             if (jwtService.isTokenValid(logoutRequest.getToken(), user)) {

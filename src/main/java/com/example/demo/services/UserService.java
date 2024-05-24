@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
+  
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final UserFavoriteProductRepository userFavoriteProductRepository;

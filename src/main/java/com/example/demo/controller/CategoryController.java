@@ -20,6 +20,7 @@ public class CategoryController {
     }
 
     @PostMapping("/categories")
+
     public ResponseEntity<?> createCategory(
             @RequestBody CategoryDTO categoryDTO,
             @RequestHeader("Authorization") String authorization
@@ -36,6 +37,7 @@ public class CategoryController {
         return categoryService.findAllCategories();
     }
 
+
     @DeleteMapping("/categories/{id}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable Long id,
@@ -48,6 +50,7 @@ public class CategoryController {
         return categoryService.deleteCategory(id);
     }
 
+
     @DeleteMapping("/categories")
     public ResponseEntity<?> deleteAllCategories(
             @RequestHeader("Authorization") String authorization
@@ -58,6 +61,7 @@ public class CategoryController {
         }
         return categoryService.deleteAllCategories();
     }
+
 
     @PatchMapping("/categories/{id}")
     public ResponseEntity<?> updateCategory(
@@ -72,15 +76,18 @@ public class CategoryController {
         return categoryService.updateCategory(id, categoryDTO.getName(), categoryDTO.getImageUrl());
     }
 
+
     @GetMapping("/categories/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         return categoryService.findCategoryById(id);
     }
 
+
     @GetMapping("/categories/{name}")
     public ResponseEntity<?> getCategoryByName(@PathVariable String name) {
         return categoryService.findCategoryByName(name);
     }
+
 
     @GetMapping("/categories/{id}/products")
     public ResponseEntity<?> getProductsByCategoryId(@PathVariable Long id) {

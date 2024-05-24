@@ -12,4 +12,5 @@ public interface ColorService {
     ResponseEntity<?> updateColor(Long id, String hexCode);
     ResponseEntity<?> deleteColor(Long id);
     void deleteAllColors();
+    ResponseEntity<?>  findColorsByProductId(Long productId);
 }
